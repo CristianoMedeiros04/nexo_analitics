@@ -188,6 +188,20 @@ class Command(BaseCommand):
                     proc.save(update_fields=alterados)
                     atualizados += 1
 
+        # ---- Limpeza de sobras do seed de testes (SQLite antigo):
+        # registros que não estão na planilha E nunca foram vistos no
+        # ControlJus são dados de teste obsoletos.
+        numeros_planilha = {r["Número do processo"] for r in registros if r.get("Número do processo")}
+        sobras = Processo.objects.filter(controljus_id__isnull=True).exclude(
+            numero_processo__in=numeros_planilha
+        )
+        removidos = sobras.count()
+        if removidos:
+            sobras.delete()
+            self.stdout.write(self.style.WARNING(
+                f"Removidos {removidos} registros de teste obsoletos (seed antigo)."
+            ))
+
         self.stdout.write(self.style.SUCCESS(
             f"Processos: {criados} criados, {atualizados} atualizados "
             f"(total no banco: {Processo.objects.count()})."

@@ -17,7 +17,7 @@ from pathlib import Path
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction
+from django.db import connection, transaction
 
 from core.models import Processo
 
@@ -138,12 +138,14 @@ class Command(BaseCommand):
                 continue
             objetos.append(Processo(**dados))
 
-        Processo.objects.bulk_create(
-            objetos,
-            update_conflicts=True,
-            unique_fields=["numero_processo"],
-            update_fields=[c for c in mapeamento.values() if c != "numero_processo"],
-        )
+        update_fields = [c for c in mapeamento.values() if c != "numero_processo"]
+        bulk_kwargs = {"update_conflicts": True, "update_fields": update_fields}
+        # MySQL usa ON DUPLICATE KEY UPDATE e NÃO aceita unique_fields no upsert;
+        # SQLite/PostgreSQL exigem unique_fields. Ajusta conforme o backend.
+        if connection.vendor != "mysql":
+            bulk_kwargs["unique_fields"] = ["numero_processo"]
+
+        Processo.objects.bulk_create(objetos, **bulk_kwargs)
 
         self.stdout.write(
             self.style.SUCCESS(

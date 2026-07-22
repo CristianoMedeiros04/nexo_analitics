@@ -12,4 +12,5 @@ sqlparse==0.5.3
 # Produção / Railway
 dj-database-url==2.3.0
 PyMySQL==1.1.1
+cryptography==43.0.3
 whitenoise==6.8.2

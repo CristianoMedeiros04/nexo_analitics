@@ -1,0 +1,67 @@
+{
+ "desfecho_processo": [
+  "Abandono da Causa",
+  "Acordo",
+  "Anulação de sentença/acórdão",
+  "Arquivamento Ausência do Reclamante",
+  "Ausência das Condições da Ação",
+  "Ausência de Pressupostos Processuais",
+  "Desistência",
+  "Improcedente",
+  "Indeferimento da Petição Inicial",
+  "Parcialmente Procedente",
+  "Pendente",
+  "Perempção, litispendência ou coisa julgada",
+  "Procedente",
+  "Procedência do Pedido - Reconhecimento pelo réu",
+  "Pronúncia de Decadência ou Prescrição",
+  "Renúncia ao direito pelo autor",
+  "Segurança (concessão em parte)",
+  "Segurança (concessão)",
+  "Segurança (denegação)"
+ ],
+ "desfecho_pedido": [
+  "PLEITEADO",
+  "DEFERIMENTO",
+  "INDEFERIMENTO",
+  "DEFERIMENTO PARCIAL",
+  "INDETERMINADO"
+ ],
+ "fase": [
+  "Conhecimento",
+  "Execução",
+  "Liquidação"
+ ],
+ "situacao": [
+  "Arquivado",
+  "Ativo",
+  "Suspenso"
+ ],
+ "tipos_recursos": [
+  "AI",
+  "AIRO",
+  "AIRR",
+  "ED-PJE",
+  "RE",
+  "RO",
+  "RR"
+ ],
+ "tipo_alteracao_condenacao": [
+  "AUMENTO",
+  "REDUÇÃO"
+ ],
+ "classes": [
+  "Ação Trabalhista - Rito Ordinário",
+  "Ação Trabalhista - Rito Sumaríssimo",
+  "Ação Trabalhista - Rito Sumário (Alçada)",
+  "Ação de Cumprimento",
+  "Carta Precatória Cível",
+  "Cumprimento Provisório de Sentença",
+  "Cumprimento de sentença",
+  "Homologação da Transação Extrajudicial",
+  "Mandado de Segurança Cível",
+  "Monitória",
+  "Requisição de Pequeno Valor",
+  "Tutela Antecipada Antecedente"
+ ]
+}

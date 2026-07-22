@@ -1,0 +1,1154 @@
+[
+ {
+  "nome": "Horas Extras",
+  "ocorrencias": 579
+ },
+ {
+  "nome": "FGTS",
+  "ocorrencias": 507
+ },
+ {
+  "nome": "Honorários Advocatícios",
+  "ocorrencias": 475
+ },
+ {
+  "nome": "Aviso Prévio",
+  "ocorrencias": 467
+ },
+ {
+  "nome": "Custas",
+  "ocorrencias": 465
+ },
+ {
+  "nome": "Repouso Semanal Remunerado",
+  "ocorrencias": 458
+ },
+ {
+  "nome": "Assistência Judiciária Gratuita",
+  "ocorrencias": 443
+ },
+ {
+  "nome": "Salário / Diferença Salarial",
+  "ocorrencias": 438
+ },
+ {
+  "nome": "Décimo Terceiro Salário",
+  "ocorrencias": 409
+ },
+ {
+  "nome": "Participação nos Lucros ou Resultados - PLR",
+  "ocorrencias": 391
+ },
+ {
+  "nome": "Férias",
+  "ocorrencias": 386
+ },
+ {
+  "nome": "Equiparação Salarial",
+  "ocorrencias": 372
+ },
+ {
+  "nome": "Indenização / Terço Constitucional",
+  "ocorrencias": 350
+ },
+ {
+  "nome": "Salário / Pagamento",
+  "ocorrencias": 317
+ },
+ {
+  "nome": "Intervalo Intrajornada",
+  "ocorrencias": 307
+ },
+ {
+  "nome": "Indenização",
+  "ocorrencias": 293
+ },
+ {
+  "nome": "Gratificação",
+  "ocorrencias": 286
+ },
+ {
+  "nome": "Comissões",
+  "ocorrencias": 281
+ },
+ {
+  "nome": "Prescrição",
+  "ocorrencias": 280
+ },
+ {
+  "nome": "Gratificação Natalina / 13º Salário",
+  "ocorrencias": 273
+ },
+ {
+  "nome": "Gratificação de Função",
+  "ocorrencias": 261
+ },
+ {
+  "nome": "FGTS | Multa de 40% do FGTS",
+  "ocorrencias": 255
+ },
+ {
+  "nome": "Verbas Rescisórias",
+  "ocorrencias": 233
+ },
+ {
+  "nome": "Gratificação Semestral",
+  "ocorrencias": 216
+ },
+ {
+  "nome": "Contribuições Previdenciárias",
+  "ocorrencias": 210
+ },
+ {
+  "nome": "Dedução de valores",
+  "ocorrencias": 207
+ },
+ {
+  "nome": "Multa de 40% do FGTS",
+  "ocorrencias": 205
+ },
+ {
+  "nome": "Correção Monetária",
+  "ocorrencias": 186
+ },
+ {
+  "nome": "Reconhecimento de Relação de Emprego",
+  "ocorrencias": 185
+ },
+ {
+  "nome": "Férias | Indenização / Terço Constitucional",
+  "ocorrencias": 182
+ },
+ {
+  "nome": "Adicional por Tempo de Serviço",
+  "ocorrencias": 179
+ },
+ {
+  "nome": "Imposto de Renda",
+  "ocorrencias": 179
+ },
+ {
+  "nome": "Indenização por Dano Moral",
+  "ocorrencias": 176
+ },
+ {
+  "nome": "Inépcia da Inicial",
+  "ocorrencias": 173
+ },
+ {
+  "nome": "Aplicação de dispositivos legais",
+  "ocorrencias": 172
+ },
+ {
+  "nome": "Reajuste Salarial",
+  "ocorrencias": 171
+ },
+ {
+  "nome": "Defeito",
+  "ocorrencias": 162
+ },
+ {
+  "nome": "Nulidade ou Anulação",
+  "ocorrencias": 162
+ },
+ {
+  "nome": "Preliminares",
+  "ocorrencias": 162
+ },
+ {
+  "nome": "Juros",
+  "ocorrencias": 159
+ },
+ {
+  "nome": "Férias Proporcionais | Indenização / Terço Constitucional",
+  "ocorrencias": 158
+ },
+ {
+  "nome": "Cartão de Ponto",
+  "ocorrencias": 155
+ },
+ {
+  "nome": "Prêmio",
+  "ocorrencias": 152
+ },
+ {
+  "nome": "Multas e Demais Sanções",
+  "ocorrencias": 149
+ },
+ {
+  "nome": "Requerimento de improcedência",
+  "ocorrencias": 147
+ },
+ {
+  "nome": "Saldo de Salário",
+  "ocorrencias": 147
+ },
+ {
+  "nome": "Revelia / Confissão",
+  "ocorrencias": 145
+ },
+ {
+  "nome": "Adicional de Horas Extras",
+  "ocorrencias": 144
+ },
+ {
+  "nome": "Juros de Mora",
+  "ocorrencias": 131
+ },
+ {
+  "nome": "Multa Prevista em Norma Coletiva",
+  "ocorrencias": 131
+ },
+ {
+  "nome": "Repouso Semanal Remunerado e Feriado",
+  "ocorrencias": 129
+ },
+ {
+  "nome": "Honorários Periciais",
+  "ocorrencias": 128
+ },
+ {
+  "nome": "Perícia",
+  "ocorrencias": 126
+ },
+ {
+  "nome": "Outros pedidos processuais",
+  "ocorrencias": 124
+ },
+ {
+  "nome": "Salário Suplementar",
+  "ocorrencias": 122
+ },
+ {
+  "nome": "Cargo de Confiança",
+  "ocorrencias": 121
+ },
+ {
+  "nome": "Créditos",
+  "ocorrencias": 116
+ },
+ {
+  "nome": "Remuneração",
+  "ocorrencias": 114
+ },
+ {
+  "nome": "Acúmulo de Função",
+  "ocorrencias": 114
+ },
+ {
+  "nome": "fiscais e previdenciárias",
+  "ocorrencias": 111
+ },
+ {
+  "nome": "Impugnação",
+  "ocorrencias": 110
+ },
+ {
+  "nome": "Direito adquirido / coisa julgada / ato jurídico perfeito",
+  "ocorrencias": 106
+ },
+ {
+  "nome": "Adicional de Periculosidade",
+  "ocorrencias": 104
+ },
+ {
+  "nome": "Compensação",
+  "ocorrencias": 102
+ },
+ {
+  "nome": "Promoção",
+  "ocorrencias": 100
+ },
+ {
+  "nome": "Litigância de Má-Fé",
+  "ocorrencias": 99
+ },
+ {
+  "nome": "Ato / Negócio Jurídico",
+  "ocorrencias": 98
+ },
+ {
+  "nome": "Integração ao Salário",
+  "ocorrencias": 89
+ },
+ {
+  "nome": "Quebra de Caixa",
+  "ocorrencias": 89
+ },
+ {
+  "nome": "Ajuda / Tíquete Alimentação",
+  "ocorrencias": 86
+ },
+ {
+  "nome": "Coisa Julgada",
+  "ocorrencias": 86
+ },
+ {
+  "nome": "Cesta Básica",
+  "ocorrencias": 85
+ },
+ {
+  "nome": "Extinção do Processo sem Resolução de Mérito",
+  "ocorrencias": 84
+ },
+ {
+  "nome": "Requerimento de procedência",
+  "ocorrencias": 80
+ },
+ {
+  "nome": "Confissão",
+  "ocorrencias": 78
+ },
+ {
+  "nome": "Indeferimento",
+  "ocorrencias": 78
+ },
+ {
+  "nome": "Penalidades Processuais",
+  "ocorrencias": 77
+ },
+ {
+  "nome": "Anotação na CTPS",
+  "ocorrencias": 77
+ },
+ {
+  "nome": "Outras despesas",
+  "ocorrencias": 75
+ },
+ {
+  "nome": "Auxílio Alimentação",
+  "ocorrencias": 73
+ },
+ {
+  "nome": "Multa do Artigo 477 da CLT | Multa do Artigo 467 da CLT",
+  "ocorrencias": 73
+ },
+ {
+  "nome": "Abono",
+  "ocorrencias": 72
+ },
+ {
+  "nome": "Compensação de Jornada",
+  "ocorrencias": 72
+ },
+ {
+  "nome": "Rescisão do Contrato de Trabalho",
+  "ocorrencias": 72
+ },
+ {
+  "nome": "Descontos Fiscais",
+  "ocorrencias": 72
+ },
+ {
+  "nome": "Descontos Previdenciários",
+  "ocorrencias": 70
+ },
+ {
+  "nome": "Extinção do processo",
+  "ocorrencias": 68
+ },
+ {
+  "nome": "Aplicação de precedentes",
+  "ocorrencias": 66
+ },
+ {
+  "nome": "Pensão",
+  "ocorrencias": 65
+ },
+ {
+  "nome": "Interesse Processual",
+  "ocorrencias": 64
+ },
+ {
+  "nome": "Competência da Justiça do Trabalho",
+  "ocorrencias": 63
+ },
+ {
+  "nome": "Adicional",
+  "ocorrencias": 62
+ },
+ {
+  "nome": "Deduções sociais",
+  "ocorrencias": 62
+ },
+ {
+  "nome": "Aplicação da reforma trabalhista",
+  "ocorrencias": 62
+ },
+ {
+  "nome": "Lucros cessantes",
+  "ocorrencias": 61
+ },
+ {
+  "nome": "Estabilidade",
+  "ocorrencias": 60
+ },
+ {
+  "nome": "Inscrição / Documentação",
+  "ocorrencias": 60
+ },
+ {
+  "nome": "Legitimidade",
+  "ocorrencias": 59
+ },
+ {
+  "nome": "Exclusão da lide",
+  "ocorrencias": 58
+ },
+ {
+  "nome": "Aplicabilidade",
+  "ocorrencias": 58
+ },
+ {
+  "nome": "Falta de Pressuposto Processual e/ou Condição da Ação",
+  "ocorrencias": 57
+ },
+ {
+  "nome": "Acidente de Trabalho",
+  "ocorrencias": 55
+ },
+ {
+  "nome": "Doença Ocupacional",
+  "ocorrencias": 55
+ },
+ {
+  "nome": "Multa do Artigo 477 da CLT",
+  "ocorrencias": 55
+ },
+ {
+  "nome": "Plano de Saúde",
+  "ocorrencias": 55
+ },
+ {
+  "nome": "Multa do Artigo 467 da CLT",
+  "ocorrencias": 53
+ },
+ {
+  "nome": "Décimo Terceiro Salário Proporcional",
+  "ocorrencias": 51
+ },
+ {
+  "nome": "Antecipação de Tutela / Tutela Específica",
+  "ocorrencias": 50
+ },
+ {
+  "nome": "Liminar",
+  "ocorrencias": 50
+ },
+ {
+  "nome": "Contribuições sociais",
+  "ocorrencias": 49
+ },
+ {
+  "nome": "Assédio Moral",
+  "ocorrencias": 48
+ },
+ {
+  "nome": "Indenização por Dano Material",
+  "ocorrencias": 48
+ },
+ {
+  "nome": "Efeitos da Declaração de Inconstitucionalidade",
+  "ocorrencias": 48
+ },
+ {
+  "nome": "Despedida / Dispensa Imotivada",
+  "ocorrencias": 46
+ },
+ {
+  "nome": "Acordo e Convenção Coletivos de Trabalho",
+  "ocorrencias": 45
+ },
+ {
+  "nome": "Reforma de julgado",
+  "ocorrencias": 45
+ },
+ {
+  "nome": "Desvio de Função e Reenquadramento",
+  "ocorrencias": 44
+ },
+ {
+  "nome": "Licenças",
+  "ocorrencias": 44
+ },
+ {
+  "nome": "Anotação / Baixa / Retificação",
+  "ocorrencias": 44
+ },
+ {
+  "nome": "Reintegração / Readmissão ou Indenização",
+  "ocorrencias": 42
+ },
+ {
+  "nome": "Piso Salarial",
+  "ocorrencias": 42
+ },
+ {
+  "nome": "Cerceamento de Defesa",
+  "ocorrencias": 42
+ },
+ {
+  "nome": "Restituição / Indenização de Despesa",
+  "ocorrencias": 41
+ },
+ {
+  "nome": "Produção",
+  "ocorrencias": 41
+ },
+ {
+  "nome": "Ajuda de Custo",
+  "ocorrencias": 40
+ },
+ {
+  "nome": "Férias Proporcionais",
+  "ocorrencias": 39
+ },
+ {
+  "nome": "Banco de Horas",
+  "ocorrencias": 38
+ },
+ {
+  "nome": "Feriado em Dobro",
+  "ocorrencias": 36
+ },
+ {
+  "nome": "Desconsideração da Personalidade Jurídica",
+  "ocorrencias": 34
+ },
+ {
+  "nome": "Cálculo / Repercussão",
+  "ocorrencias": 34
+ },
+ {
+  "nome": "Pagamento",
+  "ocorrencias": 34
+ },
+ {
+  "nome": "Descontos Salariais - Devolução",
+  "ocorrencias": 33
+ },
+ {
+  "nome": "Expedição de ofício",
+  "ocorrencias": 32
+ },
+ {
+  "nome": "Suspensão para Qualificação Profissional",
+  "ocorrencias": 32
+ },
+ {
+  "nome": "Sobreaviso / Prontidão / Tempo à Disposição",
+  "ocorrencias": 32
+ },
+ {
+  "nome": "Seguro Desemprego",
+  "ocorrencias": 31
+ },
+ {
+  "nome": "Termo de Rescisão Contratual",
+  "ocorrencias": 31
+ },
+ {
+  "nome": "Extinção do processo com resolução de mérito",
+  "ocorrencias": 30
+ },
+ {
+  "nome": "Norma Coletiva - Aplicabilidade / Cumprimento",
+  "ocorrencias": 29
+ },
+ {
+  "nome": "Salário Base - Obediência ao Salário Mínimo",
+  "ocorrencias": 29
+ },
+ {
+  "nome": "Auxílio doença",
+  "ocorrencias": 28
+ },
+ {
+  "nome": "Sucumbência",
+  "ocorrencias": 27
+ },
+ {
+  "nome": "Formação",
+  "ocorrencias": 27
+ },
+ {
+  "nome": "Suspensão e Extinção do Processo",
+  "ocorrencias": 27
+ },
+ {
+  "nome": "Alvará",
+  "ocorrencias": 27
+ },
+ {
+  "nome": "Horas in Itinere",
+  "ocorrencias": 26
+ },
+ {
+  "nome": "Responsabilidade Solidária / Subsidiária",
+  "ocorrencias": 26
+ },
+ {
+  "nome": "Adicional Noturno",
+  "ocorrencias": 26
+ },
+ {
+  "nome": "Salário Vencido / Retido",
+  "ocorrencias": 25
+ },
+ {
+  "nome": "Justa Causa / Falta Grave",
+  "ocorrencias": 25
+ },
+ {
+  "nome": "Adicional de Transferência",
+  "ocorrencias": 25
+ },
+ {
+  "nome": "Dano Moral / Material",
+  "ocorrencias": 25
+ },
+ {
+  "nome": "Devolução",
+  "ocorrencias": 25
+ },
+ {
+  "nome": "Prazo",
+  "ocorrencias": 25
+ },
+ {
+  "nome": "Gerentes",
+  "ocorrencias": 24
+ },
+ {
+  "nome": "Encargos de gestão",
+  "ocorrencias": 24
+ },
+ {
+  "nome": "Outros danos",
+  "ocorrencias": 23
+ },
+ {
+  "nome": "Litispendência",
+  "ocorrencias": 23
+ },
+ {
+  "nome": "Benefício previdenciário",
+  "ocorrencias": 23
+ },
+ {
+  "nome": "Segredo de justiça",
+  "ocorrencias": 23
+ },
+ {
+  "nome": "Equipamento de Proteção Individual - EPI",
+  "ocorrencias": 23
+ },
+ {
+  "nome": "Outros Descontos Salariais",
+  "ocorrencias": 23
+ },
+ {
+  "nome": "Diárias",
+  "ocorrencias": 21
+ },
+ {
+  "nome": "Integração em Verbas Rescisórias",
+  "ocorrencias": 21
+ },
+ {
+  "nome": "Levantamento do FGTS",
+  "ocorrencias": 21
+ },
+ {
+  "nome": "Salário Substituição",
+  "ocorrencias": 21
+ },
+ {
+  "nome": "Indenização por dano Extrapatrimonial",
+  "ocorrencias": 20
+ },
+ {
+  "nome": "Desconfiguração de Justa Causa",
+  "ocorrencias": 19
+ },
+ {
+  "nome": "Depósito / Diferença de Recolhimento",
+  "ocorrencias": 19
+ },
+ {
+  "nome": "Outros benefícios",
+  "ocorrencias": 19
+ },
+ {
+  "nome": "Contribuição Sindical",
+  "ocorrencias": 19
+ },
+ {
+  "nome": "Decadência",
+  "ocorrencias": 17
+ },
+ {
+  "nome": "Ônus da Prova",
+  "ocorrencias": 17
+ },
+ {
+  "nome": "Comprovantes",
+  "ocorrencias": 17
+ },
+ {
+  "nome": "Manutenção de julgado",
+  "ocorrencias": 16
+ },
+ {
+  "nome": "Chamamento ao Processo",
+  "ocorrencias": 16
+ },
+ {
+  "nome": "Medida Cautelar",
+  "ocorrencias": 15
+ },
+ {
+  "nome": "Decisão Homologatória",
+  "ocorrencias": 15
+ },
+ {
+  "nome": "Intervalo Interjornadas",
+  "ocorrencias": 14
+ },
+ {
+  "nome": "Nulidade",
+  "ocorrencias": 14
+ },
+ {
+  "nome": "Adicional de Insalubridade",
+  "ocorrencias": 14
+ },
+ {
+  "nome": "Seguro de Vida",
+  "ocorrencias": 13
+ },
+ {
+  "nome": "Negativa de Prestação Jurisdicional",
+  "ocorrencias": 13
+ },
+ {
+  "nome": "Salário Família",
+  "ocorrencias": 13
+ },
+ {
+  "nome": "Trabalho aos Domingos",
+  "ocorrencias": 13
+ },
+ {
+  "nome": "Perdas e Danos",
+  "ocorrencias": 12
+ },
+ {
+  "nome": "Rescisão",
+  "ocorrencias": 12
+ },
+ {
+  "nome": "Constrição / Penhora / Avaliação / Indisponibilidade de Bens",
+  "ocorrencias": 12
+ },
+ {
+  "nome": "Dispensa / Rescisão do Contrato de Trabalho",
+  "ocorrencias": 12
+ },
+ {
+  "nome": "Obrigação de Fazer / Não Fazer",
+  "ocorrencias": 12
+ },
+ {
+  "nome": "Controle de Jornada",
+  "ocorrencias": 12
+ },
+ {
+  "nome": "Depósito Recursal",
+  "ocorrencias": 12
+ },
+ {
+  "nome": "Preclusão / Coisa Julgada",
+  "ocorrencias": 12
+ },
+ {
+  "nome": "Pronunciamento Explícito (Prequestionamento)",
+  "ocorrencias": 12
+ },
+ {
+  "nome": "Pedido de Demissão",
+  "ocorrencias": 11
+ },
+ {
+  "nome": "Aposentadoria",
+  "ocorrencias": 11
+ },
+ {
+  "nome": "Constituição de Capital",
+  "ocorrencias": 11
+ },
+ {
+  "nome": "Efeito Suspensivo",
+  "ocorrencias": 11
+ },
+ {
+  "nome": "Provas",
+  "ocorrencias": 11
+ },
+ {
+  "nome": "Multas Processuais",
+  "ocorrencias": 11
+ },
+ {
+  "nome": "Condições Degradantes",
+  "ocorrencias": 10
+ },
+ {
+  "nome": "Rescisão Indireta",
+  "ocorrencias": 10
+ },
+ {
+  "nome": "Descontos Indevidos",
+  "ocorrencias": 10
+ },
+ {
+  "nome": "Antecipações",
+  "ocorrencias": 10
+ },
+ {
+  "nome": "Gratificação Anual",
+  "ocorrencias": 10
+ },
+ {
+  "nome": "Pensão Vitalícia",
+  "ocorrencias": 9
+ },
+ {
+  "nome": "Condenação",
+  "ocorrencias": 9
+ },
+ {
+  "nome": "Auxílio Creche",
+  "ocorrencias": 9
+ },
+ {
+  "nome": "Dispensa Discriminatória",
+  "ocorrencias": 9
+ },
+ {
+  "nome": "Condenação Solidária / Subsidiária",
+  "ocorrencias": 8
+ },
+ {
+  "nome": "Vale Transporte",
+  "ocorrencias": 8
+ },
+ {
+  "nome": "Outras diferenças",
+  "ocorrencias": 8
+ },
+ {
+  "nome": "Aplicação de princípios",
+  "ocorrencias": 8
+ },
+ {
+  "nome": "Denunciação da Lide",
+  "ocorrencias": 8
+ },
+ {
+  "nome": "Juiz Impedido / Absolutamente Incompetente",
+  "ocorrencias": 8
+ },
+ {
+  "nome": "Prazo de Validade",
+  "ocorrencias": 8
+ },
+ {
+  "nome": "Parcela Incontroversa",
+  "ocorrencias": 8
+ },
+ {
+  "nome": "Litisconsórcio e Assistência",
+  "ocorrencias": 7
+ },
+ {
+  "nome": "Responsabilidade Civil do Empregador",
+  "ocorrencias": 7
+ },
+ {
+  "nome": "Indenização por Dano Estético",
+  "ocorrencias": 7
+ },
+ {
+  "nome": "Representação Processual",
+  "ocorrencias": 7
+ },
+ {
+  "nome": "Ajuda Combustível",
+  "ocorrencias": 6
+ },
+ {
+  "nome": "Julgamento antecipado da lide",
+  "ocorrencias": 6
+ },
+ {
+  "nome": "Impossibilidade Jurídica do Pedido",
+  "ocorrencias": 6
+ },
+ {
+  "nome": "Grupo Econômico",
+  "ocorrencias": 6
+ },
+ {
+  "nome": "Hora Noturna / Hora Extra",
+  "ocorrencias": 6
+ },
+ {
+  "nome": "Guias do Seguro Desemprego",
+  "ocorrencias": 6
+ },
+ {
+  "nome": "Abandono de Emprego",
+  "ocorrencias": 6
+ },
+ {
+  "nome": "Salário por Fora - Integração",
+  "ocorrencias": 6
+ },
+ {
+  "nome": "Estabilidade Acidentária",
+  "ocorrencias": 5
+ },
+ {
+  "nome": "Liberação / Entrega das Guias",
+  "ocorrencias": 5
+ },
+ {
+  "nome": "Ordem de Preferência",
+  "ocorrencias": 5
+ },
+ {
+  "nome": "Renúncia Parcial",
+  "ocorrencias": 5
+ },
+ {
+  "nome": "Depoimento Pessoal / Testemunha",
+  "ocorrencias": 5
+ },
+ {
+  "nome": "Unicidade Contratual",
+  "ocorrencias": 5
+ },
+ {
+  "nome": "Regime 12 x 36",
+  "ocorrencias": 5
+ },
+ {
+  "nome": "Retenção da CTPS",
+  "ocorrencias": 4
+ },
+ {
+  "nome": "Suspeição",
+  "ocorrencias": 4
+ },
+ {
+  "nome": "Dedução / Abatimento de Horas Extras",
+  "ocorrencias": 4
+ },
+ {
+  "nome": "Outros impostos",
+  "ocorrencias": 4
+ },
+ {
+  "nome": "Instalação / manutenção",
+  "ocorrencias": 4
+ },
+ {
+  "nome": "Desistência da ação",
+  "ocorrencias": 4
+ },
+ {
+  "nome": "Conversão de Regime Jurídico",
+  "ocorrencias": 4
+ },
+ {
+  "nome": "Indenização Adicional",
+  "ocorrencias": 4
+ },
+ {
+  "nome": "Cláusula Penal",
+  "ocorrencias": 3
+ },
+ {
+  "nome": "Sucessão",
+  "ocorrencias": 3
+ },
+ {
+  "nome": "Hora Noturna Reduzida",
+  "ocorrencias": 3
+ },
+ {
+  "nome": "Ação Rescisória",
+  "ocorrencias": 3
+ },
+ {
+  "nome": "Depósito Prévio",
+  "ocorrencias": 3
+ },
+ {
+  "nome": "Apuração de valores",
+  "ocorrencias": 3
+ },
+ {
+  "nome": "RMNR",
+  "ocorrencias": 3
+ },
+ {
+  "nome": "Hipossuficiência",
+  "ocorrencias": 2
+ },
+ {
+  "nome": "Integração à lide",
+  "ocorrencias": 2
+ },
+ {
+  "nome": "Absolvição",
+  "ocorrencias": 2
+ },
+ {
+  "nome": "PIS - Indenização",
+  "ocorrencias": 2
+ },
+ {
+  "nome": "Fraude",
+  "ocorrencias": 2
+ },
+ {
+  "nome": "Outras Gratificações",
+  "ocorrencias": 2
+ },
+ {
+  "nome": "Multa do Art. 475-J do CPC",
+  "ocorrencias": 2
+ },
+ {
+  "nome": "Desconto Assistencial",
+  "ocorrencias": 2
+ },
+ {
+  "nome": "Intervalo Intrajornada | Intervalo Interjornadas",
+  "ocorrencias": 2
+ },
+ {
+  "nome": "Contrato Nulo - Efeitos",
+  "ocorrencias": 2
+ },
+ {
+  "nome": "Responsabilidade",
+  "ocorrencias": 2
+ },
+ {
+  "nome": "Obrigação de Dar",
+  "ocorrencias": 2
+ },
+ {
+  "nome": "Adicional de Risco",
+  "ocorrencias": 2
+ },
+ {
+  "nome": "Contrato Individual de Trabalho",
+  "ocorrencias": 2
+ },
+ {
+  "nome": "Inconstitucionalidade Material",
+  "ocorrencias": 2
+ },
+ {
+  "nome": "Salário Mínimo Profissional",
+  "ocorrencias": 2
+ },
+ {
+  "nome": "Contribuição Confederativa",
+  "ocorrencias": 1
+ },
+ {
+  "nome": "Força Maior / Factum Principis",
+  "ocorrencias": 1
+ },
+ {
+  "nome": "Condições da Ação",
+  "ocorrencias": 1
+ },
+ {
+  "nome": "Alimentação",
+  "ocorrencias": 1
+ },
+ {
+  "nome": "Dumping social",
+  "ocorrencias": 1
+ },
+ {
+  "nome": "Auxílio Funeral",
+  "ocorrencias": 1
+ },
+ {
+  "nome": "Deferimento",
+  "ocorrencias": 1
+ },
+ {
+  "nome": "Uniforme",
+  "ocorrencias": 1
+ },
+ {
+  "nome": "Indenização / Dobra / Terço Constitucional",
+  "ocorrencias": 1
+ },
+ {
+  "nome": "Trabalho em Condições Análogas à de Escravo",
+  "ocorrencias": 1
+ },
+ {
+  "nome": "Não Classificado",
+  "ocorrencias": 1
+ },
+ {
+  "nome": "Greve",
+  "ocorrencias": 1
+ },
+ {
+  "nome": "Multa por Descumprimento de Ordem Judicial",
+  "ocorrencias": 1
+ },
+ {
+  "nome": "Outras contribuições",
+  "ocorrencias": 1
+ },
+ {
+  "nome": "Tomador de Serviços / Terceirização",
+  "ocorrencias": 1
+ },
+ {
+  "nome": "Complementação de Benefício Previdenciário",
+  "ocorrencias": 1
+ },
+ {
+  "nome": "Intervenção de Terceiros",
+  "ocorrencias": 1
+ },
+ {
+  "nome": "Contradita",
+  "ocorrencias": 1
+ },
+ {
+  "nome": "Extinção Normal do Contrato a Termo",
+  "ocorrencias": 1
+ },
+ {
+  "nome": "Pagamento Atrasado / Correção Monetária",
+  "ocorrencias": 1
+ },
+ {
+  "nome": "Honorários Assistenciais",
+  "ocorrencias": 1
+ }
+]

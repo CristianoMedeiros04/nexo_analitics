@@ -1,6 +1,13 @@
 #!/usr/bin/env bash
 set -e
 
+# Serviço cron (SERVICE_ROLE=cron): executa a sincronização semanal e sai.
+if [ "${SERVICE_ROLE:-web}" = "cron" ]; then
+  echo ">> [cron] Executando sync_semanal..."
+  python manage.py migrate --noinput
+  exec python manage.py sync_semanal
+fi
+
 echo ">> Aplicando migrations..."
 python manage.py migrate --noinput
 

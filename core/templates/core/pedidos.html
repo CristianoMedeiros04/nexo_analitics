@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Pedidos - Nexo Estratégico{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chart-container {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .chart-title {
+        font-size: 16px;
+        font-weight: 500;
+        color: #5b7898;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .chart-subtitle {
+        font-size: 12px;
+        color: #999;
+        background: #f0f4f8;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-weight: normal;
+    }
+    
+    .chart-plot {
+        width: 100%;
+        height: 400px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    
+    .chart-plot-pie {
+        width: 100%;
+        height: 500px;
+    }
+    
+    .filter-group {
+        margin-bottom: 15px;
+    }
+    
+    .filter-label {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 8px;
+        display: block;
+    }
+    
+    .filter-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .filter-btn {
+        padding: 6px 16px;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: 16px;
+        cursor: pointer;
+        font-size: 13px;
+        color: #666;
+        transition: all 0.2s;
+    }
+    
+    .filter-btn:hover {
+        border-color: #4a90e2;
+        color: #4a90e2;
+    }
+    
+    .filter-btn.active {
+        background: #4a90e2;
+        color: white;
+        border-color: #4a90e2;
+    }
+    
+    .dropdown-filter {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .dropdown-btn {
+        padding: 8px 16px;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        color: #666;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .dropdown-btn:after {
+        content: '▼';
+        font-size: 10px;
+    }
+    
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: white;
+        min-width: 200px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        z-index: 1;
+        border-radius: 4px;
+        margin-top: 4px;
+    }
+    
+    .dropdown-content.show {
+        display: block;
+    }
+    
+    .dropdown-item {
+        padding: 10px 16px;
+        cursor: pointer;
+        font-size: 13px;
+        color: #666;
+    }
+    
+    .dropdown-item:hover {
+        background-color: #f5f5f5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="page-title">Pedidos</h1>
+    
+    <!-- Gráfico 1: Volume de deferimentos de pedidos -->
+    <div class="chart-container">
+        <div class="chart-title">
+            Volume de deferimentos de pedidos
+            <span class="chart-subtitle">Total</span>
+        </div>
+        <div id="chart-volume-deferimentos" class="chart-plot"></div>
+    </div>
+    
+    <!-- Gráfico 2: Proporção de deferimentos de pedidos -->
+    <div class="chart-container">
+        <div class="chart-title">
+            Proporção de deferimentos de pedidos
+        </div>
+        <div id="chart-proporcao-deferimentos" class="chart-plot-pie"></div>
+    </div>
+    
+    <!-- Gráfico 3: Ranking de concessões -->
+    <div class="chart-container">
+        <div class="chart-title">
+            Ranking de concessões
+            <span class="chart-subtitle">Total</span>
+        </div>
+        
+        <div class="filter-group">
+            <label class="filter-label">Pedido de concessão</label>
+            <div class="dropdown-filter">
+                <button class="dropdown-btn" id="dropdown-pedido-btn">
+                    <span id="selected-pedido">Antecipação de Tutela</span>
+                </button>
+                <div class="dropdown-content" id="dropdown-pedido">
+                    <div class="dropdown-item" data-value="antecipacao_tutela">Antecipação de Tutela</div>
+                    <div class="dropdown-item" data-value="medida_liminar">Medida Liminar</div>
+                    <div class="dropdown-item" data-value="justica_gratuita">Justiça Gratuita</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="filter-group">
+            <label class="filter-label">Resultado de concessão</label>
+            <div class="dropdown-filter">
+                <button class="dropdown-btn" id="dropdown-resultado-btn">
+                    <span id="selected-resultado">Concedida</span>
+                </button>
+                <div class="dropdown-content" id="dropdown-resultado">
+                    <div class="dropdown-item" data-value="concedida">Concedida</div>
+                    <div class="dropdown-item" data-value="concedida_em_parte">Concedida em Parte</div>
+                    <div class="dropdown-item" data-value="nao_concedida">Não Concedida</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="filter-group">
+            <label class="filter-label">Agrupamento</label>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-agrupamento="comarca">Comarca</button>
+                <button class="filter-btn" data-agrupamento="classe">Classe</button>
+                <button class="filter-btn" data-agrupamento="assuntos">Assuntos</button>
+                <button class="filter-btn" data-agrupamento="magistrado">Magistrado</button>
+                <button class="filter-btn" data-agrupamento="origem">Origem</button>
+                <button class="filter-btn" data-agrupamento="tribunal">Tribunal</button>
+                <button class="filter-btn" data-agrupamento="adv_polo_ativo">Adv. Polo Ativo</button>
+                <button class="filter-btn" data-agrupamento="cargo">Cargo</button>
+            </div>
+        </div>
+        
+        <div id="chart-ranking-concessoes" class="chart-plot"></div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="{% static 'core/js/pedidos-charts.js' %}"></script>
+{% endblock %}

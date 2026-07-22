@@ -1,0 +1,656 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Magistrados - Comparar - Nexo Estratégico{% endblock %}
+
+{% block extra_css %}
+<style>
+    .magistrados-container {
+        padding: 20px;
+    }
+
+    .page-title {
+        color: #5a6c7d;
+        margin-bottom: 30px;
+        font-size: 24px;
+        font-weight: 500;
+    }
+
+    /* Seção de Filtros Preliminares */
+    .filtros-preliminares {
+        background: white;
+        border-radius: 8px;
+        padding: 25px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .filtro-section {
+        margin-bottom: 20px;
+    }
+
+    .filtro-label {
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 10px;
+        display: block;
+        font-weight: 500;
+    }
+
+    /* Botões de Polo */
+    .polo-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 25px;
+    }
+
+    .polo-btn {
+        padding: 10px 24px;
+        border: 2px solid #ddd;
+        background: white;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 14px;
+        color: #666;
+        transition: all 0.3s;
+        font-weight: 500;
+    }
+
+    .polo-btn:hover {
+        border-color: #2196F3;
+        color: #2196F3;
+    }
+
+    .polo-btn.active {
+        background: #2196F3;
+        color: white;
+        border-color: #2196F3;
+    }
+
+    /* Campos de Seleção de Magistrados */
+    .magistrados-selection {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .magistrado-field {
+        position: relative;
+    }
+
+    .magistrado-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        background: #f5f5f5;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 12px 15px;
+        transition: all 0.3s;
+    }
+
+    .magistrado-input-wrapper:hover {
+        border-color: #2196F3;
+    }
+
+    .magistrado-input-wrapper.has-value {
+        background: white;
+        border-color: #2196F3;
+    }
+
+    .magistrado-input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        outline: none;
+        font-size: 13px;
+        color: #333;
+    }
+
+    .magistrado-input::placeholder {
+        color: #999;
+    }
+
+    .clear-magistrado {
+        display: none;
+        cursor: pointer;
+        color: #999;
+        font-size: 18px;
+        padding: 0 5px;
+    }
+
+    .magistrado-input-wrapper.has-value .clear-magistrado {
+        display: block;
+    }
+
+    .add-icon {
+        color: #999;
+        font-size: 20px;
+    }
+
+    /* Autocomplete Dropdown */
+    .autocomplete-dropdown {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 1px solid #ddd;
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+        max-height: 200px;
+        overflow-y: auto;
+        z-index: 1000;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+
+    .autocomplete-dropdown.show {
+        display: block;
+    }
+
+    .autocomplete-item {
+        padding: 10px 15px;
+        cursor: pointer;
+        font-size: 13px;
+        color: #333;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .autocomplete-item:hover {
+        background: #f5f5f5;
+    }
+
+    .autocomplete-item:last-child {
+        border-bottom: none;
+    }
+
+    /* Botão Comparar */
+    .comparar-button-wrapper {
+        text-align: center;
+    }
+
+    .comparar-btn {
+        padding: 12px 40px;
+        background: #2196F3;
+        color: white;
+        border: none;
+        border-radius: 24px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.3s;
+        box-shadow: 0 2px 4px rgba(33, 150, 243, 0.3);
+    }
+
+    .comparar-btn:hover {
+        background: #1976D2;
+        box-shadow: 0 4px 8px rgba(33, 150, 243, 0.4);
+    }
+
+    .comparar-btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        box-shadow: none;
+    }
+
+    .comparar-btn .material-icons {
+        vertical-align: middle;
+        margin-right: 5px;
+        font-size: 18px;
+    }
+
+    /* Seção de Resultados */
+    .resultados-section {
+        display: none;
+    }
+
+    .resultados-section.show {
+        display: block;
+    }
+
+    /* Cards de Gráficos */
+    .chart-card {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .chart-title {
+        font-size: 16px;
+        color: #5a6c7d;
+        font-weight: 500;
+    }
+
+    .chart-subtitle {
+        display: inline-block;
+        background: #e8f4f8;
+        color: #2196F3;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        margin-left: 10px;
+    }
+
+    .chart-menu {
+        cursor: pointer;
+        color: #999;
+    }
+
+    .chart-container {
+        height: 400px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    /* Scrollbar styling */
+    .chart-container::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .chart-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+
+    .chart-container::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+
+    .chart-container::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+
+    /* Filtro de Deferimento */
+    .deferimento-filter {
+        margin-bottom: 15px;
+    }
+
+    .deferimento-select {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 13px;
+        color: #666;
+        background: white;
+        cursor: pointer;
+        outline: none;
+    }
+
+    .deferimento-select:focus {
+        border-color: #2196F3;
+    }
+
+    /* Mensagem de Aviso */
+    .aviso-selecao {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+        font-size: 14px;
+    }
+
+    .aviso-selecao .material-icons {
+        font-size: 48px;
+        display: block;
+        margin-bottom: 15px;
+        color: #ddd;
+    }
+
+    /* Responsividade */
+    @media (max-width: 1200px) {
+        .magistrados-selection {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 768px) {
+        .magistrados-selection {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="magistrados-container">
+    <h1 class="page-title">Magistrados - Comparar</h1>
+
+    <!-- Filtros Preliminares -->
+    <div class="filtros-preliminares">
+        <!-- Seleção de Magistrados -->
+        <div class="filtro-section">
+            <label class="filtro-label">Selecione até 4 magistrados para comparar</label>
+            <div class="magistrados-selection">
+                <div class="magistrado-field">
+                    <div class="magistrado-input-wrapper">
+                        <input type="text" class="magistrado-input" placeholder="Magistrado 1" data-index="0">
+                        <span class="clear-magistrado" onclick="clearMagistrado(0)">×</span>
+                        <span class="material-icons add-icon">search</span>
+                    </div>
+                    <div class="autocomplete-dropdown" data-index="0"></div>
+                </div>
+
+                <div class="magistrado-field">
+                    <div class="magistrado-input-wrapper">
+                        <input type="text" class="magistrado-input" placeholder="Magistrado 2" data-index="1">
+                        <span class="clear-magistrado" onclick="clearMagistrado(1)">×</span>
+                        <span class="material-icons add-icon">add</span>
+                    </div>
+                    <div class="autocomplete-dropdown" data-index="1"></div>
+                </div>
+
+                <div class="magistrado-field">
+                    <div class="magistrado-input-wrapper">
+                        <input type="text" class="magistrado-input" placeholder="Magistrado 3" data-index="2">
+                        <span class="clear-magistrado" onclick="clearMagistrado(2)">×</span>
+                        <span class="material-icons add-icon">add</span>
+                    </div>
+                    <div class="autocomplete-dropdown" data-index="2"></div>
+                </div>
+
+                <div class="magistrado-field">
+                    <div class="magistrado-input-wrapper">
+                        <input type="text" class="magistrado-input" placeholder="Magistrado 4" data-index="3">
+                        <span class="clear-magistrado" onclick="clearMagistrado(3)">×</span>
+                        <span class="material-icons add-icon">add</span>
+                    </div>
+                    <div class="autocomplete-dropdown" data-index="3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botão Comparar -->
+        <div class="comparar-button-wrapper">
+            <button class="comparar-btn" id="btn-comparar" disabled>
+                <span class="material-icons">compare_arrows</span>
+                Comparar
+            </button>
+        </div>
+    </div>
+
+    <!-- Resultados -->
+    <div class="resultados-section" id="resultados-section">
+        <!-- Desfechos por Magistrado -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <span class="chart-title">Desfechos por magistrado</span>
+                    <span class="chart-subtitle">Total</span>
+                </div>
+                <span class="material-icons chart-menu">more_vert</span>
+            </div>
+            <div class="chart-container">
+                <div id="chart-desfechos"></div>
+            </div>
+        </div>
+
+        <!-- Decisões por Magistrado -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <span class="chart-title">Decisões por magistrado</span>
+                    <span class="chart-subtitle">Total</span>
+                </div>
+                <span class="material-icons chart-menu">more_vert</span>
+            </div>
+            <div class="chart-container">
+                <div id="chart-decisoes"></div>
+            </div>
+        </div>
+
+        <!-- Duração dos Processos -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <span class="chart-title">Duração dos processos</span>
+                    <span class="chart-subtitle">Total</span>
+                </div>
+                <span class="material-icons chart-menu">more_vert</span>
+            </div>
+            <div class="chart-container">
+                <div id="chart-duracao"></div>
+            </div>
+        </div>
+
+        <!-- Deferimento de Pedidos -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <span class="chart-title">Deferimento de pedidos</span>
+                    <span class="chart-subtitle">Total</span>
+                </div>
+                <span class="material-icons chart-menu">more_vert</span>
+            </div>
+            <div class="deferimento-filter">
+                <select class="deferimento-select" id="deferimento-tipo">
+                    <option value="concedida">Concedida</option>
+                    <option value="concedida_parte">Concedida em parte</option>
+                    <option value="nao_concedida">Não Concedida</option>
+                </select>
+            </div>
+            <div class="chart-container">
+                <div id="chart-deferimento"></div>
+            </div>
+        </div>
+
+        <!-- Valores Médios por Magistrado -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <span class="chart-title">Valores médios por magistrado</span>
+                    <span class="chart-subtitle">Média</span>
+                </div>
+                <span class="material-icons chart-menu">more_vert</span>
+            </div>
+            <div class="chart-container">
+                <div id="chart-valores-medios"></div>
+            </div>
+        </div>
+
+        <!-- Valores Totais por Magistrado -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <span class="chart-title">Valores totais por magistrado</span>
+                    <span class="chart-subtitle">Total</span>
+                </div>
+                <span class="material-icons chart-menu">more_vert</span>
+            </div>
+            <div class="chart-container">
+                <div id="chart-valores-totais"></div>
+            </div>
+        </div>
+
+        <!-- Proporção entre Processos Ativos e Total -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <div>
+                    <span class="chart-title">Proporção entre processos ativos e total por magistrado</span>
+                    <span class="chart-subtitle">Total</span>
+                </div>
+                <span class="material-icons chart-menu">more_vert</span>
+            </div>
+            <div class="chart-container">
+                <div id="chart-proporcao-ativos"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+<script src="{% static 'core/js/magistrados-charts.js' %}"></script>
+<script>
+    // Variáveis globais
+    let poloSelecionado = 'ativo';
+    let magistradosSelecionados = ['', '', '', ''];
+    let todosMagistrados = [];
+
+    // Função para limpar campo de magistrado
+    function clearMagistrado(index) {
+        magistradosSelecionados[index] = '';
+        const input = document.querySelector(`.magistrado-input[data-index="${index}"]`);
+        input.value = '';
+        input.closest('.magistrado-input-wrapper').classList.remove('has-value');
+        verificarBotaoComparar();
+    }
+
+    // Função para verificar se pode habilitar botão comparar
+    function verificarBotaoComparar() {
+        const selecionados = magistradosSelecionados.filter(adv => adv !== '');
+        const btnComparar = document.getElementById('btn-comparar');
+        btnComparar.disabled = selecionados.length === 0;
+    }
+
+    // Carregar lista de magistrados
+    async function carregarMagistrados() {
+        try {
+            const response = await fetch(`/api/magistrados/lista/?polo=${poloSelecionado}`);
+            const data = await response.json();
+            todosMagistrados = data.magistrados || [];
+        } catch (error) {
+            console.error('Erro ao carregar magistrados:', error);
+            todosMagistrados = [];
+        }
+    }
+
+    // Filtrar magistrados para autocomplete
+    function filtrarMagistrados(texto, index) {
+        if (!texto || texto.length < 2) {
+            return [];
+        }
+        
+        const textoLower = texto.toLowerCase();
+        return todosMagistrados.filter(adv => {
+            // Não mostrar magistrados já selecionados em outros campos
+            if (magistradosSelecionados.includes(adv) && magistradosSelecionados[index] !== adv) {
+                return false;
+            }
+            return adv.toLowerCase().includes(textoLower);
+        }).slice(0, 10); // Limitar a 10 resultados
+    }
+
+    // Mostrar dropdown de autocomplete
+    function mostrarAutocomplete(index, resultados) {
+        const dropdown = document.querySelector(`.autocomplete-dropdown[data-index="${index}"]`);
+        
+        if (resultados.length === 0) {
+            dropdown.classList.remove('show');
+            return;
+        }
+
+        dropdown.innerHTML = resultados.map(adv => 
+            `<div class="autocomplete-item" data-value="${adv}">${adv}</div>`
+        ).join('');
+
+        dropdown.classList.add('show');
+
+        // Event listeners para itens do dropdown
+        dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+            item.addEventListener('click', function() {
+                selecionarMagistrado(index, this.dataset.value);
+            });
+        });
+    }
+
+    // Selecionar magistrado
+    function selecionarMagistrado(index, magistrado) {
+        magistradosSelecionados[index] = magistrado;
+        const input = document.querySelector(`.magistrado-input[data-index="${index}"]`);
+        input.value = magistrado;
+        input.closest('.magistrado-input-wrapper').classList.add('has-value');
+        
+        // Fechar dropdown
+        document.querySelector(`.autocomplete-dropdown[data-index="${index}"]`).classList.remove('show');
+        
+        verificarBotaoComparar();
+    }
+
+    // Event listeners para mudança de polo
+    document.querySelectorAll('.polo-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.polo-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            poloSelecionado = this.dataset.polo;
+            
+            // Limpar seleções
+            magistradosSelecionados = ['', '', '', ''];
+            document.querySelectorAll('.magistrado-input').forEach(input => {
+                input.value = '';
+                input.closest('.magistrado-input-wrapper').classList.remove('has-value');
+            });
+            
+            // Recarregar lista de magistrados
+            carregarMagistrados();
+            verificarBotaoComparar();
+        });
+    });
+
+    // Event listeners para inputs de magistrados
+    document.querySelectorAll('.magistrado-input').forEach(input => {
+        input.addEventListener('input', function() {
+            const index = parseInt(this.dataset.index);
+            const texto = this.value;
+            const resultados = filtrarMagistrados(texto, index);
+            mostrarAutocomplete(index, resultados);
+        });
+
+        input.addEventListener('focus', function() {
+            const index = parseInt(this.dataset.index);
+            const texto = this.value;
+            if (texto.length >= 2) {
+                const resultados = filtrarMagistrados(texto, index);
+                mostrarAutocomplete(index, resultados);
+            }
+        });
+    });
+
+    // Fechar dropdowns ao clicar fora
+    document.addEventListener('click', function(e) {
+        if (!e.target.closest('.magistrado-field')) {
+            document.querySelectorAll('.autocomplete-dropdown').forEach(dropdown => {
+                dropdown.classList.remove('show');
+            });
+        }
+    });
+
+    // Botão Comparar
+    document.getElementById('btn-comparar').addEventListener('click', function() {
+        const selecionados = magistradosSelecionados.filter(adv => adv !== '');
+        if (selecionados.length > 0) {
+            document.getElementById('resultados-section').classList.add('show');
+            carregarTodosGraficos();
+            
+            // Scroll suave para resultados
+            setTimeout(() => {
+                document.getElementById('resultados-section').scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+            }, 100);
+        }
+    });
+
+    // Filtro de deferimento
+    document.getElementById('deferimento-tipo').addEventListener('change', function() {
+        carregarGraficoDeferimento();
+    });
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', function() {
+        carregarMagistrados();
+    });
+</script>
+{% endblock %}

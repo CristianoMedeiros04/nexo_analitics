@@ -1,0 +1,922 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Nexo Estratégico - Sistema de Mentoria{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Google Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <!-- Plotly.js para gráficos -->
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+    
+    <!-- ECharts para mapas interativos -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    
+    <!-- Filter Sidebar CSS -->
+    <link rel="stylesheet" href="{% static 'core/css/filter-sidebar.css' %}">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 240px;
+            background: linear-gradient(180deg, #2b538f 0%, #3d6ba8 100%);
+            color: white;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar-logo {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar-logo h3 {
+            font-size: 20px;
+            font-weight: 500;
+            margin: 0;
+            color: white;
+        }
+        
+        .sidebar-logo small {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 10px 0;
+        }
+        
+        .sidebar-menu li {
+            margin: 5px 0;
+        }
+        
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+        
+        .sidebar-menu .material-icons {
+            margin-right: 12px;
+            font-size: 20px;
+        }
+        
+        .sidebar-menu .menu-text {
+            font-size: 14px;
+        }
+        
+        .sidebar-menu .badge {
+            margin-left: auto;
+            font-size: 10px;
+        }
+        
+        /* Submenu */
+        .menu-item-with-submenu {
+            position: relative;
+        }
+        
+        .submenu-arrow {
+            margin-left: auto;
+            font-size: 18px;
+            transition: transform 0.3s;
+        }
+        
+        .menu-item-with-submenu.open .submenu-arrow {
+            transform: rotate(180deg);
+        }
+        
+        .submenu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: rgba(0,0,0,0.2);
+        }
+        
+        .menu-item-with-submenu.open .submenu {
+            max-height: 200px;
+        }
+        
+        .submenu li a {
+            padding-left: 52px;
+            font-size: 13px;
+        }
+        
+        .submenu li a:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        /* Top Bar */
+        .topbar {
+            position: fixed;
+            top: 0;
+            left: 240px;
+            right: 0;
+            height: 60px;
+            background: #2b538f;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            z-index: 999;
+        }
+        
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .topbar-tabs {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .topbar-tab {
+            padding: 8px 16px;
+            background: transparent;
+            border: none;
+            color: #666;
+            font-size: 14px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .topbar-tab.active {
+            color: #2b538f;
+            border-bottom-color: #2b538f;
+        }
+        
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .topbar-filter {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 4px;
+            font-size: 13px;
+            color: white;
+        }
+        
+        .topbar-stats {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: white;
+        }
+        
+        .topbar-stats .material-icons {
+            font-size: 18px;
+            color: white;
+        }
+        
+        .topbar-user {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+        
+        .topbar-user .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #2b538f;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: 240px;
+            margin-top: 60px;
+            padding: 30px;
+            min-height: calc(100vh - 60px);
+        }
+        
+        /* Cards */
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card-value {
+            font-size: 28px;
+            font-weight: 500;
+            color: #2b538f;
+            margin: 10px 0;
+        }
+        
+        .stat-card-label {
+            font-size: 13px;
+            color: #666;
+            margin: 0;
+        }
+        
+        /* Chart Cards */
+        .chart-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+        }
+        
+        .chart-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .chart-card-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+            margin: 0;
+        }
+        
+        .chart-card-badge {
+            padding: 4px 12px;
+            background: #e3f2fd;
+            color: #2b538f;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .chart-card-menu {
+            color: #999;
+            cursor: pointer;
+        }
+        
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .topbar,
+            .main-content {
+                margin-left: 0;
+                left: 0;
+            }
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-logo">
+            <span class="material-icons" style="font-size: 32px;">gavel</span>
+            <h3>Nexo Estratégico</h3>
+            <small>Mentoria</small>
+        </div>
+        
+        <ul class="sidebar-menu">
+            <li>
+                <a href="/" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                    <span class="material-icons">home</span>
+                    <span class="menu-text">Início</span>
+                </a>
+            </li>
+            <li>
+                <a href="#" onclick="return false;">
+                    <span class="material-icons">assistant</span>
+                    <span class="menu-text">Oráculo</span>
+                    <span class="badge bg-warning">BETA</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'core:acordos' %}" class="{% if request.resolver_match.url_name == 'acordos' %}active{% endif %}">
+                    <span class="material-icons">handshake</span>
+                    <span class="menu-text">Acordos</span>
+                </a>
+            </li>
+
+            <li>
+                <a href="{% url 'core:desfechos' %}" class="{% if request.resolver_match.url_name == 'desfechos' %}active{% endif %}">
+                    <span class="material-icons">gavel</span>
+                    <span class="menu-text">Desfechos</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'core:distribuicao' %}">
+                    <span class="material-icons">pie_chart</span>
+                    <span class="menu-text">Distribuição</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'core:duracao' %}">
+                    <span class="material-icons">schedule</span>
+                    <span class="menu-text">Duração</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'core:revelias' %}">
+                    <span class="material-icons">trending_up</span>
+                    <span class="menu-text">Revelias</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'core:tipos_acao' %}">
+                    <span class="material-icons">category</span>
+                    <span class="menu-text">Tipos de ação</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'core:recursos' %}">
+                    <span class="material-icons">account_balance</span>
+                    <span class="menu-text">Recursos</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'core:pedidos' %}">
+                    <span class="material-icons">request_page</span>
+                    <span class="menu-text">Pedidos</span>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'core:valores' %}">
+                    <span class="material-icons">attach_money</span>
+                    <span class="menu-text">Valores</span>
+                </a>
+            </li>
+            <li class="menu-item-with-submenu">
+                <a href="#" onclick="toggleSubmenu(event, this)">
+                    <span class="material-icons">compare</span>
+                    <span class="menu-text">Comparar</span>
+                    <span class="material-icons submenu-arrow">expand_more</span>
+                </a>
+                <ul class="submenu">
+                    <li>
+                        <a href="{% url 'core:advogados' %}">
+                            <span class="material-icons">people</span>
+                            <span class="menu-text">Advogados</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'core:magistrados' %}">
+                            <span class="material-icons">business</span>
+                            <span class="menu-text">Magistrados</span>
+                        </a>
+                    </li>
+                </ul>
+            </li>
+            <li>
+                <a href="{% url 'core:lista' %}">
+                    <span class="material-icons">list</span>
+                    <span class="menu-text">Lista</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+    
+    <!-- Top Bar -->
+    <div class="topbar">
+        <div class="topbar-left">
+            <h5 style="margin: 0; color: white; font-weight: 500;">Braz, Godoi e Medeiros</h5>
+        </div>
+        
+        <div class="topbar-right">
+            <div class="topbar-filter" id="btn-open-filter" style="cursor: pointer;">
+                <span class="material-icons" style="font-size: 16px;">filter_list</span>
+                <span>Filtrar</span>
+            </div>
+            
+            <div class="topbar-stats">
+                <span class="material-icons">description</span>
+                <strong id="topbar-total">0</strong>
+                <span>Trabalhista</span>
+            </div>
+            
+            <span class="material-icons" style="cursor: pointer;">notifications</span>
+            
+            <div class="topbar-user">
+                <div class="avatar">U</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        {% block content %}{% endblock %}
+    </div>
+    
+    <!-- Filter Sidebar Overlay -->
+    <div class="filter-sidebar-overlay" id="filter-overlay"></div>
+    
+    <!-- Filter Sidebar -->
+    <div class="filter-sidebar" id="filter-sidebar">
+        <!-- Header -->
+        <div class="filter-sidebar-header">
+            <h4>Filtros</h4>
+            <button class="filter-sidebar-close" id="btn-close-filter">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+        
+        <!-- Body -->
+        <div class="filter-sidebar-body">
+            <!-- Seção: Localização -->
+            <div class="filter-section">
+                <div class="filter-section-title">Localização</div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">UFs</label>
+                    <div class="filter-search-list">
+                        <span class="material-icons filter-search-icon">search</span>
+                        <input type="text" class="filter-search-input" id="search-ufs" placeholder="Pesquisar UFs...">
+                        <div class="filter-list" id="list-ufs"></div>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Comarcas</label>
+                    <div class="filter-search-list">
+                        <span class="material-icons filter-search-icon">search</span>
+                        <input type="text" class="filter-search-input" id="search-comarcas" placeholder="Pesquisar comarcas...">
+                        <div class="filter-list" id="list-comarcas"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Seção: Órgãos e Tribunais -->
+            <div class="filter-section">
+                <div class="filter-section-title">Órgãos e Tribunais</div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Órgão de Origem</label>
+                    <div class="filter-search-list">
+                        <span class="material-icons filter-search-icon">search</span>
+                        <input type="text" class="filter-search-input" id="search-orgao-origem" placeholder="Pesquisar...">
+                        <div class="filter-list" id="list-orgao-origem"></div>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Órgão Julgador</label>
+                    <div class="filter-search-list">
+                        <span class="material-icons filter-search-icon">search</span>
+                        <input type="text" class="filter-search-input" id="search-orgao-julgador" placeholder="Pesquisar...">
+                        <div class="filter-list" id="list-orgao-julgador"></div>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Tribunais</label>
+                    <div class="filter-search-list">
+                        <span class="material-icons filter-search-icon">search</span>
+                        <input type="text" class="filter-search-input" id="search-tribunais" placeholder="Pesquisar tribunais...">
+                        <div class="filter-list" id="list-tribunais"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Seção: Partes e Identificação -->
+            <div class="filter-section">
+                <div class="filter-section-title">Partes e Identificação</div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Partes</label>
+                    <div class="filter-search-list">
+                        <span class="material-icons filter-search-icon">search</span>
+                        <input type="text" class="filter-search-input" id="search-partes" placeholder="Pesquisar partes...">
+                        <div class="filter-list" id="list-partes"></div>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">CNPJ</label>
+                    <div class="filter-search-list">
+                        <span class="material-icons filter-search-icon">search</span>
+                        <input type="text" class="filter-search-input" id="search-cnpj" placeholder="Pesquisar CNPJ...">
+                        <div class="filter-list" id="list-cnpj"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Seção: Profissionais -->
+            <div class="filter-section">
+                <div class="filter-section-title">Profissionais</div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Advogados</label>
+                    <div class="filter-search-list">
+                        <span class="material-icons filter-search-icon">search</span>
+                        <input type="text" class="filter-search-input" id="search-advogados" placeholder="Pesquisar advogados...">
+                        <div class="filter-list" id="list-advogados"></div>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Magistrados</label>
+                    <div class="filter-search-list">
+                        <span class="material-icons filter-search-icon">search</span>
+                        <input type="text" class="filter-search-input" id="search-magistrados" placeholder="Pesquisar magistrados...">
+                        <div class="filter-list" id="list-magistrados"></div>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Tipo de Cargos</label>
+                    <div class="filter-search-list">
+                        <span class="material-icons filter-search-icon">search</span>
+                        <input type="text" class="filter-search-input" id="search-tipo-cargos" placeholder="Pesquisar...">
+                        <div class="filter-list" id="list-tipo-cargos"></div>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Cargos</label>
+                    <div class="filter-search-list">
+                        <span class="material-icons filter-search-icon">search</span>
+                        <input type="text" class="filter-search-input" id="search-cargos" placeholder="Pesquisar cargos...">
+                        <div class="filter-list" id="list-cargos"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Seção: Datas e Período -->
+            <div class="filter-section">
+                <div class="filter-section-title">Datas e Período</div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Tipo de Data</label>
+                    <select class="filter-select" id="filter-tipo-data">
+                        <option value="">Selecione...</option>
+                        <option value="data_acordo">Data de acordo</option>
+                        <option value="data_arquivamento">Data de arquivamento</option>
+                        <option value="data_bloqueio">Data de bloqueio</option>
+                        <option value="data_condenacao">Data de condenação</option>
+                        <option value="data_distribuicao">Data de distribuição</option>
+                        <option value="data_revelia">Data de revelia</option>
+                        <option value="data_liquidacao">Data de liquidação</option>
+                        <option value="data_pedido_substituicao">Data do pedido de substituição</option>
+                        <option value="data_apresentacao_deposito">Data de apresentação do depósito</option>
+                        <option value="data_apresentacao_apolice">Data de apresentação da apólice</option>
+                        <option value="data_transito_julgado">Data de trânsito em julgado</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Período</label>
+                    <div class="filter-range">
+                        <input type="date" class="filter-input" id="filter-data-inicio">
+                        <span>até</span>
+                        <input type="date" class="filter-input" id="filter-data-fim">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Seção: Status e Fase -->
+            <div class="filter-section">
+                <div class="filter-section-title">Status e Fase</div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Status do Processo</label>
+                    <div class="filter-checkbox-group">
+                        <div class="filter-checkbox-item">
+                            <input type="checkbox" id="status-arquivado" value="Arquivado">
+                            <label for="status-arquivado">Arquivado</label>
+                        </div>
+                        <div class="filter-checkbox-item">
+                            <input type="checkbox" id="status-ativo" value="Ativo">
+                            <label for="status-ativo">Ativo</label>
+                        </div>
+                        <div class="filter-checkbox-item">
+                            <input type="checkbox" id="status-suspenso" value="Suspenso">
+                            <label for="status-suspenso">Suspenso</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Fase</label>
+                    <div class="filter-checkbox-group">
+                        <div class="filter-checkbox-item">
+                            <input type="checkbox" id="fase-conhecimento" value="Conhecimento">
+                            <label for="fase-conhecimento">Conhecimento</label>
+                        </div>
+                        <div class="filter-checkbox-item">
+                            <input type="checkbox" id="fase-liquidacao" value="Liquidação">
+                            <label for="fase-liquidacao">Liquidação</label>
+                        </div>
+                        <div class="filter-checkbox-item">
+                            <input type="checkbox" id="fase-execucao" value="Execução">
+                            <label for="fase-execucao">Execução</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Seção: Classificação Processual -->
+            <div class="filter-section">
+                <div class="filter-section-title">Classificação Processual</div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Desfecho</label>
+                    <div class="filter-search-list">
+                        <span class="material-icons filter-search-icon">search</span>
+                        <input type="text" class="filter-search-input" id="search-desfecho" placeholder="Pesquisar desfecho...">
+                        <div class="filter-list" id="list-desfecho"></div>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Assuntos</label>
+                    <div class="filter-search-list">
+                        <span class="material-icons filter-search-icon">search</span>
+                        <input type="text" class="filter-search-input" id="search-assuntos" placeholder="Pesquisar assuntos...">
+                        <div class="filter-list" id="list-assuntos"></div>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Classes</label>
+                    <div class="filter-search-list">
+                        <span class="material-icons filter-search-icon">search</span>
+                        <input type="text" class="filter-search-input" id="search-classes" placeholder="Pesquisar classes...">
+                        <div class="filter-list" id="list-classes"></div>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Tipos de Recurso</label>
+                    <div class="filter-search-list">
+                        <span class="material-icons filter-search-icon">search</span>
+                        <input type="text" class="filter-search-input" id="search-tipos-recurso" placeholder="Pesquisar...">
+                        <div class="filter-list" id="list-tipos-recurso"></div>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Tipos de Pedido</label>
+                    <div class="filter-search-list">
+                        <span class="material-icons filter-search-icon">search</span>
+                        <input type="text" class="filter-search-input" id="search-tipos-pedido" placeholder="Pesquisar...">
+                        <div class="filter-list" id="list-tipos-pedido"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Seção: Valores -->
+            <div class="filter-section">
+                <div class="filter-section-title">Valores</div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Valor da Causa</label>
+                    <div class="filter-range">
+                        <input type="number" class="filter-input" id="filter-valor-causa-min" placeholder="Mínimo">
+                        <span>até</span>
+                        <input type="number" class="filter-input" id="filter-valor-causa-max" placeholder="Máximo">
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Valor da Condenação</label>
+                    <div class="filter-range">
+                        <input type="number" class="filter-input" id="filter-valor-condenacao-min" placeholder="Mínimo">
+                        <span>até</span>
+                        <input type="number" class="filter-input" id="filter-valor-condenacao-max" placeholder="Máximo">
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Valor do Acordo</label>
+                    <div class="filter-range">
+                        <input type="number" class="filter-input" id="filter-valor-acordo-min" placeholder="Mínimo">
+                        <span>até</span>
+                        <input type="number" class="filter-input" id="filter-valor-acordo-max" placeholder="Máximo">
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Valor da Liquidação</label>
+                    <div class="filter-range">
+                        <input type="number" class="filter-input" id="filter-valor-liquidacao-min" placeholder="Mínimo">
+                        <span>até</span>
+                        <input type="number" class="filter-input" id="filter-valor-liquidacao-max" placeholder="Máximo">
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Valor do Depósito</label>
+                    <div class="filter-range">
+                        <input type="number" class="filter-input" id="filter-valor-deposito-min" placeholder="Mínimo">
+                        <span>até</span>
+                        <input type="number" class="filter-input" id="filter-valor-deposito-max" placeholder="Máximo">
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Valor da Apólice</label>
+                    <div class="filter-range">
+                        <input type="number" class="filter-input" id="filter-valor-apolice-min" placeholder="Mínimo">
+                        <span>até</span>
+                        <input type="number" class="filter-input" id="filter-valor-apolice-max" placeholder="Máximo">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Seção: Características Processuais -->
+            <div class="filter-section">
+                <div class="filter-section-title">Características Processuais</div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Trânsito em Julgado</label>
+                    <div class="filter-checkbox-group">
+                        <div class="filter-checkbox-item">
+                            <input type="radio" name="transito" id="transito-julgado" value="Julgado">
+                            <label for="transito-julgado">Julgado</label>
+                        </div>
+                        <div class="filter-checkbox-item">
+                            <input type="radio" name="transito" id="transito-nao-julgado" value="Não julgado">
+                            <label for="transito-nao-julgado">Não julgado</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Acordo</label>
+                    <div class="filter-checkbox-group">
+                        <div class="filter-checkbox-item">
+                            <input type="radio" name="acordo" id="acordo-homologado" value="Homologado">
+                            <label for="acordo-homologado">Homologado</label>
+                        </div>
+                        <div class="filter-checkbox-item">
+                            <input type="radio" name="acordo" id="acordo-nao-homologado" value="Não Homologado">
+                            <label for="acordo-nao-homologado">Não Homologado</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Bloqueio</label>
+                    <div class="filter-checkbox-group">
+                        <div class="filter-checkbox-item">
+                            <input type="radio" name="bloqueio" id="bloqueio-com" value="Com Indicativo">
+                            <label for="bloqueio-com">Com Indicativo</label>
+                        </div>
+                        <div class="filter-checkbox-item">
+                            <input type="radio" name="bloqueio" id="bloqueio-sem" value="Sem indicativo">
+                            <label for="bloqueio-sem">Sem indicativo</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Desfecho do Pedido de Substituição</label>
+                    <div class="filter-checkbox-group">
+                        <div class="filter-checkbox-item">
+                            <input type="checkbox" id="desfecho-sub-deferido" value="Deferido">
+                            <label for="desfecho-sub-deferido">Deferido</label>
+                        </div>
+                        <div class="filter-checkbox-item">
+                            <input type="checkbox" id="desfecho-sub-indeferido" value="Indeferido">
+                            <label for="desfecho-sub-indeferido">Indeferido</label>
+                        </div>
+                        <div class="filter-checkbox-item">
+                            <input type="checkbox" id="desfecho-sub-nao-identificado" value="Não Identificado">
+                            <label for="desfecho-sub-nao-identificado">Não Identificado</label>
+                        </div>
+                        <div class="filter-checkbox-item">
+                            <input type="checkbox" id="desfecho-sub-pendente" value="Pendente">
+                            <label for="desfecho-sub-pendente">Pendente</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Seção: Jurisdição -->
+            <div class="filter-section">
+                <div class="filter-section-title">Jurisdição</div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Grau de Jurisdição</label>
+                    <div class="filter-checkbox-group">
+                        <div class="filter-checkbox-item">
+                            <input type="checkbox" id="jurisdicao-1" value="1ª Instância">
+                            <label for="jurisdicao-1">1ª Instância</label>
+                        </div>
+                        <div class="filter-checkbox-item">
+                            <input type="checkbox" id="jurisdicao-2" value="2ª Instância">
+                            <label for="jurisdicao-2">2ª Instância</label>
+                        </div>
+                        <div class="filter-checkbox-item">
+                            <input type="checkbox" id="jurisdicao-superior" value="Superior">
+                            <label for="jurisdicao-superior">Superior</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">Maior Grau de Jurisdição em que Esteve</label>
+                    <div class="filter-checkbox-group">
+                        <div class="filter-checkbox-item">
+                            <input type="checkbox" id="maior-jurisdicao-1" value="1ª Instância">
+                            <label for="maior-jurisdicao-1">1ª Instância</label>
+                        </div>
+                        <div class="filter-checkbox-item">
+                            <input type="checkbox" id="maior-jurisdicao-2" value="2ª Instância">
+                            <label for="maior-jurisdicao-2">2ª Instância</label>
+                        </div>
+                        <div class="filter-checkbox-item">
+                            <input type="checkbox" id="maior-jurisdicao-superior" value="Superior">
+                            <label for="maior-jurisdicao-superior">Superior</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <div class="filter-sidebar-footer">
+            <button class="filter-btn filter-btn-secondary" id="btn-clear-filters">Limpar Filtros</button>
+            <button class="filter-btn filter-btn-primary" id="btn-apply-filters">Aplicar Filtros</button>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Filter Sidebar JS -->
+    <script src="{% static 'core/js/filter-sidebar.js' %}"></script>
+    
+    <!-- Submenu Toggle JS -->
+    <script>
+        function toggleSubmenu(event, element) {
+            event.preventDefault();
+            const menuItem = element.closest('.menu-item-with-submenu');
+            menuItem.classList.toggle('open');
+        }
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,590 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Mentoria{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Cards de Estatísticas -->
+    <div class="row mb-4" id="stats-cards">
+        <div class="col-md-2">
+            <div class="stat-card">
+                <div class="stat-card-value" id="card-total">-</div>
+                <p class="stat-card-label">Processos no total</p>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="stat-card">
+                <div class="stat-card-value" id="card-distribuidos">-</div>
+                <p class="stat-card-label">Distribuídos nos últimos 30 dias</p>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="stat-card">
+                <div class="stat-card-value" id="card-arquivados">-</div>
+                <p class="stat-card-label">Arquivados nos últimos 30 dias</p>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="stat-card">
+                <div class="stat-card-value" id="card-transitados">-</div>
+                <p class="stat-card-label">Transitado em julgado nos últimos 30 dias</p>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="stat-card">
+                <div class="stat-card-value" id="card-valor-total">-</div>
+                <p class="stat-card-label">Valor total das causas</p>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="stat-card">
+                <div class="stat-card-value" id="card-valor-medio">-</div>
+                <p class="stat-card-label">Valor médio das causas</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Mapa e Lista de Processos por UF -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <h5 class="chart-card-title">Mapa de processos ativos por UF</h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="chart-card-badge">Total</span>
+                        <span class="material-icons chart-card-menu">more_horiz</span>
+                    </div>
+                </div>
+                <div id="processos-uf-map" style="height: 500px; width: 100%;"></div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <h5 class="chart-card-title">Processos ativos por UF</h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="chart-card-badge">Total</span>
+                    </div>
+                </div>
+                <div id="lista-uf" style="height: 500px; overflow-y: auto;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Gráficos de Comarca e Valores -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <h5 class="chart-card-title">Processos ativos por comarca</h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="chart-card-badge">Total</span>
+                        <span class="material-icons chart-card-menu">more_horiz</span>
+                    </div>
+                </div>
+                <div id="grafico-comarca" style="height: 400px;"></div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <h5 class="chart-card-title">Valor de causa por UF (R$)</h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="chart-card-badge">Média</span>
+                        <span class="material-icons chart-card-menu">more_horiz</span>
+                    </div>
+                </div>
+                <div id="grafico-valor-causa" style="height: 400px;"></div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <h5 class="chart-card-title">Valor de condenação por UF (R$)</h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="chart-card-badge">Média</span>
+                        <span class="material-icons chart-card-menu">more_horiz</span>
+                    </div>
+                </div>
+                <div id="grafico-valor-condenacao" style="height: 400px;"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Gráfico de Fase -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="chart-card">
+                <div class="chart-card-header">
+                    <h5 class="chart-card-title">Processos ativos por fase</h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="chart-card-badge">Total</span>
+                        <span class="material-icons chart-card-menu">more_horiz</span>
+                    </div>
+                </div>
+                <div id="grafico-fase" style="height: 400px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% load static %}
+{% block extra_js %}
+<script>
+    // Cores do tema (baseado nas imagens)
+    const COLORS = {
+        primary: '#2b538f',      // Azul principal
+        secondary: '#3d6ba8',    // Azul secundário
+        success: '#81c784',      // Verde
+        info: '#64b5f6',         // Azul claro
+        warning: '#ffb74d',      // Laranja
+        danger: '#e57373',       // Vermelho
+    };
+    
+    // Dicionário de mapeamento de siglas para nomes completos dos estados
+    const UF_NAMES = {
+        "AC": "Acre",
+        "AL": "Alagoas",
+        "AM": "Amazonas",
+        "AP": "Amapá",
+        "BA": "Bahia",
+        "CE": "Ceará",
+        "DF": "Distrito Federal",
+        "ES": "Espírito Santo",
+        "GO": "Goiás",
+        "MA": "Maranhão",
+        "MT": "Mato Grosso",
+        "MS": "Mato Grosso do Sul",
+        "MG": "Minas Gerais",
+        "PA": "Pará",
+        "PB": "Paraíba",
+        "PR": "Paraná",
+        "PE": "Pernambuco",
+        "PI": "Piauí",
+        "RJ": "Rio de Janeiro",
+        "RN": "Rio Grande do Norte",
+        "RS": "Rio Grande do Sul",
+        "RO": "Rondônia",
+        "RR": "Roraima",
+        "SC": "Santa Catarina",
+        "SP": "São Paulo",
+        "SE": "Sergipe",
+        "TO": "Tocantins"
+    };
+    
+    // Função para formatar números
+    function formatNumber(num) {
+        return new Intl.NumberFormat('pt-BR').format(num);
+    }
+    
+    // Função para formatar valores monetários
+    function formatCurrency(value) {
+        if (value >= 1000000000) {
+            return 'R$ ' + (value / 1000000000).toFixed(2) + ' bi';
+        } else if (value >= 1000000) {
+            return 'R$ ' + (value / 1000000).toFixed(2) + ' mi';
+        } else if (value >= 1000) {
+            return 'R$ ' + (value / 1000).toFixed(2) + ' mil';
+        }
+        return 'R$ ' + value.toFixed(2);
+    }
+    
+    // Função para carregar dados do dashboard (com ou sem filtros)
+    function loadDashboardData(filters = null) {
+        let fetchPromise;
+        
+        if (filters && Object.keys(filters).length > 0) {
+            // Carregar dados filtrados
+            fetchPromise = fetch('/api/dashboard-data-filtered/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(filters)
+            });
+        } else {
+            // Carregar dados sem filtros
+            fetchPromise = fetch('/api/dashboard-data/');
+        }
+        
+        fetchPromise
+            .then(response => response.json())
+            .then(data => {
+                console.log('Dados recebidos:', data);
+                
+                // Atualizar cards
+                document.getElementById('card-total').textContent = formatNumber(data.cards.total_processos);
+                document.getElementById('card-distribuidos').textContent = formatNumber(data.cards.distribuidos_30_dias || data.cards.distribuidos_30d);
+                document.getElementById('card-arquivados').textContent = formatNumber(data.cards.arquivados_30_dias || data.cards.arquivados_30d);
+                document.getElementById('card-transitados').textContent = formatNumber(data.cards.transitados_30_dias || data.cards.transitados_30d);
+                document.getElementById('card-valor-total').textContent = formatCurrency(data.cards.valor_total || data.cards.valor_total_causas);
+                document.getElementById('card-valor-medio').textContent = formatCurrency(data.cards.valor_medio || data.cards.valor_medio_causas);
+                
+                // Atualizar topbar
+                document.getElementById('topbar-total').textContent = formatNumber(data.cards.total_processos);
+                
+                // Criar lista de UF
+                criarListaUF(data.processos_por_uf);
+                
+                // Criar mapa interativo ECharts
+                criarMapaInterativoUF(data.processos_por_uf, data.valor_causa_por_uf);
+                
+                // Criar gráfico de fase
+                criarGraficoFase(data.processos_por_fase);
+                
+                // Criar gráfico de comarca
+                criarGraficoComarca(data.processos_por_comarca);
+                
+                // Criar gráfico de valor de causa
+                criarGraficoValorCausa(data.valor_causa_por_uf || data.valor_causa_por_comarca);
+                
+                // Criar gráfico de valor de condenação
+                criarGraficoValorCondenacao(data.valor_condenacao_por_uf || data.valor_condenacao_por_comarca);
+            })
+            .catch(error => {
+                console.error('Erro ao carregar dados:', error);
+            });
+    }
+    
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Carregar dados inicialmente sem filtros
+    loadDashboardData();
+    
+    // Listener para evento de filtros aplicados
+    document.addEventListener('filtersApplied', function(event) {
+        console.log('Filtros aplicados, recarregando dashboard...', event.detail);
+        loadDashboardData(event.detail);
+    });
+    
+    // Listener para evento de filtros limpos
+    document.addEventListener('filtersCleared', function() {
+        console.log('Filtros limpos, recarregando dashboard...');
+        loadDashboardData();
+    });
+    
+    function criarListaUF(data) {
+        const container = document.getElementById('lista-uf');
+        
+        // Consolidar dados: somar valores de siglas e nomes completos do mesmo estado
+        const consolidatedData = {};
+        
+        data.labels.forEach((uf, idx) => {
+            // Converter para nome completo (se for sigla) ou manter como está
+            const nomeCompleto = UF_NAMES[uf] || uf;
+            
+            // Somar valores para o mesmo estado
+            if (consolidatedData[nomeCompleto]) {
+                consolidatedData[nomeCompleto] += data.values[idx];
+            } else {
+                consolidatedData[nomeCompleto] = data.values[idx];
+            }
+        });
+        
+        // Converter para array e ordenar por valor (decrescente)
+        const sortedData = Object.entries(consolidatedData)
+            .sort((a, b) => b[1] - a[1]);
+        
+        // Calcular valor máximo para porcentagens
+        const maxValue = Math.max(...sortedData.map(item => item[1]));
+        
+        let html = '<div style="padding: 10px;">';
+        
+        sortedData.forEach(([estado, valor]) => {
+            const porcentagem = (valor / maxValue) * 100;
+            
+            html += `
+                <div style="margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span style="font-size: 13px; color: #666;">${estado}</span>
+                        <span style="font-size: 13px; font-weight: 500;">${formatNumber(valor)}</span>
+                    </div>
+                    <div style="height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden;">
+                        <div style="height: 100%; width: ${porcentagem}%; background: ${COLORS.primary};"></div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        container.innerHTML = html;
+    }
+    
+    // Variável global para armazenar instância do chart do mapa
+    let mapaUFChart = null;
+
+    function criarMapaInterativoUF(ufData, valorCausaData) {
+        // Carregar GeoJSON do Brasil
+        fetch("{% static 'core/js/brasil.json' %}")
+            .then(response => response.json())
+            .then(brasilGeoJSON => {
+                // Registrar o mapa no ECharts
+                echarts.registerMap('BR', brasilGeoJSON);
+                
+                // Consolidar dados de processos: somar valores de siglas e nomes completos
+                const consolidatedProcessos = {};
+                ufData.labels.forEach((uf, idx) => {
+                    const nomeCompleto = UF_NAMES[uf] || uf;
+                    consolidatedProcessos[nomeCompleto] = (consolidatedProcessos[nomeCompleto] || 0) + ufData.values[idx];
+                });
+                
+                // Consolidar dados de valor de causa
+                const consolidatedValores = {};
+                valorCausaData.labels.forEach((uf, idx) => {
+                    const nomeCompleto = UF_NAMES[uf] || uf;
+                    const valorAtual = consolidatedValores[nomeCompleto] || { soma: 0, count: 0 };
+                    valorAtual.soma += valorCausaData.values[idx];
+                    valorAtual.count += 1;
+                    consolidatedValores[nomeCompleto] = valorAtual;
+                });
+                
+                // Preparar dados para o mapa com processos e valores
+                const seriesData = Object.entries(consolidatedProcessos).map(([name, processos]) => {
+                    const valorInfo = consolidatedValores[name] || { soma: 0, count: 1 };
+                    const valorMedio = valorInfo.count > 0 ? valorInfo.soma / valorInfo.count : 0;
+                    
+                    return {
+                        name: name,
+                        value: processos,
+                        valorMedio: valorMedio
+                    };
+                });
+                
+                console.log('Dados consolidados para o mapa:', seriesData);
+                
+                // Inicializar gráfico ECharts
+                const chartDom = document.getElementById('processos-uf-map');
+                if (!mapaUFChart) { mapaUFChart = echarts.init(chartDom); }
+                const chart = mapaUFChart;
+                
+                const option = {
+                    tooltip: {
+                        trigger: 'item',
+                        formatter: function(params) {
+                            const valorMedio = params.data.valorMedio || 0;
+                            return `${params.name}<br/>Processos: ${formatNumber(params.value)}<br/>Valor Médio: ${formatCurrency(valorMedio)}`;
+                        }
+                    },
+                    graphic: [{
+                        type: 'text',
+                        left: 20,
+                        bottom: 20,
+                        style: {
+                            text: 'NÚMERO DE PROCESSOS\nVALOR MÉDIO DAS CAUSAS',
+                            fontSize: 14,
+                            fontWeight: 'bold',
+                            fill: COLORS.primary
+                        }
+                    }],
+                    series: [{
+                        name: 'Processos por UF',
+                        type: 'map',
+                        map: 'BR',
+                        roam: true,
+                        label: {
+                            show: true,
+                            formatter: function(params) {
+                                const processos = params.value || 0;
+                                const valorMedio = params.data.valorMedio || 0;
+                                const valorFormatado = formatCurrency(valorMedio).replace('R$', 'R$').trim();
+                                return `{bold|${formatNumber(processos)}}\n${valorFormatado}`;
+                            },
+                            fontSize: 9,
+                            color: '#333',
+                            rich: {
+                                bold: {
+                                    fontWeight: 'bold'
+                                }
+                            }
+                        },
+                        itemStyle: {
+                            areaColor: '#e8f4f8',
+                            borderColor: '#d0d0d0',
+                            borderWidth: 0.5
+                        },
+                        emphasis: {
+                            itemStyle: {
+                                areaColor: '#b3d9f2',
+                            },
+                            label: {
+                                show: true,
+                                fontSize: 10,
+                                color: '#333'
+                            }
+                        },
+                        data: seriesData
+                    }]
+                };
+                
+                chart.setOption(option);
+                
+                // Implementar zoom ao clicar em um estado
+                chart.on('click', function(params) {
+                    if (params.componentType === 'series' && params.seriesType === 'map' && params.name) {
+                        const region = chart.getModel().getComponent('series').getRegion(params.name);
+                        if (region) {
+                            chart.setOption({
+                                series: [{
+                                    center: region.center,
+                                    zoom: 4
+                                }]
+                            });
+                        }
+                    }
+                });
+                
+                // Responsividade
+                window.addEventListener('resize', () => {
+                    chart.resize();
+                });
+            })
+            .catch(error => {
+                console.error('Erro ao carregar GeoJSON do Brasil:', error);
+            });
+    }
+    
+    function criarGraficoFase(data) {
+        const trace = {
+            type: 'bar',
+            x: data.values,
+            y: data.labels,
+            orientation: 'h',
+            marker: {
+                color: COLORS.primary,
+                line: {
+                    color: COLORS.secondary,
+                    width: 1
+                }
+            },
+            text: data.values.map(v => formatNumber(v)),
+            textposition: 'outside',
+            hovertemplate: '<b>%{y}</b><br>Processos: %{x}<extra></extra>'
+        };
+        
+        const layout = {
+            margin: { l: 150, r: 50, t: 20, b: 50 },
+            xaxis: {
+                title: 'Quantidade de Processos',
+                showgrid: true,
+                gridcolor: '#e0e0e0'
+            },
+            yaxis: {
+                autorange: 'reversed'
+            },
+            plot_bgcolor: '#ffffff',
+            paper_bgcolor: '#ffffff',
+            font: {
+                family: 'Roboto, sans-serif',
+                size: 12,
+                color: '#666'
+            },
+            hoverlabel: {
+                bgcolor: COLORS.primary,
+                font: { color: 'white' }
+            }
+        };
+        
+        const config = {
+            responsive: true,
+            displayModeBar: false
+        };
+        
+        try { Plotly.purge('grafico-fase'); } catch(e) {}
+        Plotly.newPlot('grafico-fase', [trace], layout, config);
+    }
+    
+    function criarGraficoComarca(data) {
+        const container = document.getElementById('grafico-comarca');
+        let html = '<div style="padding: 10px; height: 400px; overflow-y: auto;">';
+        
+        data.labels.forEach((comarca, index) => {
+            const valor = data.values[index];
+            const porcentagem = (valor / Math.max(...data.values)) * 100;
+            
+            html += `
+                <div style="margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span style="font-size: 12px; color: #666;">${comarca}</span>
+                        <span style="font-size: 12px; font-weight: 500;">${formatNumber(valor)}</span>
+                    </div>
+                    <div style="height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden;">
+                        <div style="height: 100%; width: ${porcentagem}%; background: ${COLORS.primary};"></div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        container.innerHTML = html;
+    }
+    
+    function criarGraficoValorCausa(data) {
+        const container = document.getElementById('grafico-valor-causa');
+        let html = '<div style="padding: 10px; height: 400px; overflow-y: auto;">';
+        
+        data.labels.forEach((uf, index) => {
+            const valor = data.values[index];
+            const porcentagem = (valor / Math.max(...data.values)) * 100;
+            
+            html += `
+                <div style="margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span style="font-size: 12px; color: #666;">${uf}</span>
+                        <span style="font-size: 12px; font-weight: 500;">${formatCurrency(valor)}</span>
+                    </div>
+                    <div style="height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden;">
+                        <div style="height: 100%; width: ${porcentagem}%; background: ${COLORS.warning};"></div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        container.innerHTML = html;
+    }
+    
+    function criarGraficoValorCondenacao(data) {
+        const container = document.getElementById('grafico-valor-condenacao');
+        let html = '<div style="padding: 10px; height: 400px; overflow-y: auto;">';
+        
+        data.labels.forEach((uf, index) => {
+            const valor = data.values[index];
+            const porcentagem = (valor / Math.max(...data.values)) * 100;
+            
+            html += `
+                <div style="margin-bottom: 15px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                        <span style="font-size: 12px; color: #666;">${uf}</span>
+                        <span style="font-size: 12px; font-weight: 500;">${formatCurrency(valor)}</span>
+                    </div>
+                    <div style="height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden;">
+                        <div style="height: 100%; width: ${porcentagem}%; background: ${COLORS.danger};"></div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        container.innerHTML = html;
+    }
+</script>
+{% endblock %}

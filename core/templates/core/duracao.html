@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Duração - Nexo Estratégico{% endblock %}
+
+{% block content %}
+<style>
+    .chart-card {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .chart-card h5 {
+        font-size: 14px;
+        font-weight: 600;
+        color: #666;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+    }
+    
+    .chart-container {
+        height: 400px;
+        overflow-y: auto;
+    }
+    
+    .fase-header {
+        margin-bottom: 20px;
+    }
+    
+    .fase-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .fase-tab {
+        padding: 8px 16px;
+        border: 1px solid #7b68ee;
+        border-radius: 20px;
+        background: white;
+        color: #7b68ee;
+        cursor: pointer;
+        font-size: 13px;
+        transition: all 0.3s;
+    }
+    
+    .fase-tab:hover {
+        background: #f0ecff;
+    }
+    
+    .fase-tab.active {
+        background: #7b68ee;
+        color: white;
+    }
+    
+    .marco-selectors {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .marco-selector {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .marco-selector label {
+        font-size: 12px;
+        color: #666;
+        font-weight: 500;
+    }
+    
+    .marco-selector select {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 13px;
+        min-width: 180px;
+    }
+    
+    .marco-arrow {
+        font-size: 24px;
+        color: #999;
+        margin-top: 20px;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <h4 style="color: #2b538f; margin-bottom: 20px;">Duração</h4>
+    
+    <!-- FAIXA 1: Duração de processos por fase -->
+    <div class="row">
+        <div class="col-12">
+            <div class="chart-card">
+                <h5>Duração de processos por fase <span style="color: #2b538f;">Média</span></h5>
+                <div class="chart-container" id="grafico-duracao-fase"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- FAIXA 2: Quantidade por duração e por fase -->
+    <div class="row">
+        <div class="col-12">
+            <div class="chart-card">
+                <h5>Quantidade por duração e por fase <span style="color: #2b538f;">Total</span></h5>
+                
+                <div class="fase-header">
+                    <div class="fase-tabs">
+                        <button class="fase-tab active" data-fase="Conhecimento">Conhecimento</button>
+                        <button class="fase-tab" data-fase="Liquidação">Liquidação</button>
+                        <button class="fase-tab" data-fase="Execução">Execução</button>
+                    </div>
+                </div>
+                
+                <div class="chart-container" id="grafico-quantidade-duracao"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- FAIXA 3: Duração de processos por marco -->
+    <div class="row">
+        <div class="col-12">
+            <div class="chart-card">
+                <h5>Duração de processos por marco <span style="color: #2b538f;">Média</span></h5>
+                
+                <div class="marco-selectors">
+                    <div class="marco-selector">
+                        <label>Marco inicial</label>
+                        <select id="marco-inicial">
+                            <option value="Distribuição" selected>Distribuição</option>
+                            <option value="Acordo">Acordo</option>
+                            <option value="Primeira Sentença">Primeira Sentença</option>
+                            <option value="Primeiro Acordão">Primeiro Acordão</option>
+                            <option value="Trânsito em Julgado">Trânsito em Julgado</option>
+                        </select>
+                    </div>
+                    
+                    <div class="marco-arrow">→</div>
+                    
+                    <div class="marco-selector">
+                        <label>Marco final</label>
+                        <select id="marco-final">
+                            <option value="Distribuição">Distribuição</option>
+                            <option value="Acordo" selected>Acordo</option>
+                            <option value="Primeira Sentença">Primeira Sentença</option>
+                            <option value="Primeiro Acordão">Primeiro Acordão</option>
+                            <option value="Trânsito em Julgado">Trânsito em Julgado</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="chart-container" id="grafico-duracao-marco"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'core/js/duracao-charts.js' %}"></script>
+<script>
+    // Função para carregar dados de duração
+    function loadDuracaoData(filters = null) {
+        let fetchPromise;
+        
+        if (filters) {
+            const csrftoken = getCookie('csrftoken');
+            fetchPromise = fetch('/api/duracao-data/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify(filters)
+            });
+        } else {
+            fetchPromise = fetch('/api/duracao-data/');
+        }
+        
+        fetchPromise
+            .then(response => response.json())
+            .then(data => {
+                console.log('Dados de duração recebidos:', data);
+                
+                // Criar gráficos
+                criarGraficoDuracaoFase(data.duracao_por_fase);
+                criarGraficoQuantidadeDuracao(data.quantidade_por_duracao);
+                criarGraficoDuracaoMarco(data.duracao_por_marco);
+            })
+            .catch(error => {
+                console.error('Erro ao carregar dados de duração:', error);
+            });
+    }
+    
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Carregar dados inicialmente
+    loadDuracaoData();
+    
+    // Listener para filtros aplicados
+    document.addEventListener('filtersApplied', function(event) {
+        console.log('Filtros aplicados no módulo Duração:', event.detail);
+        loadDuracaoData(event.detail);
+    });
+    
+    // Listener para limpar filtros
+    document.addEventListener('filtersCleared', function() {
+        console.log('Filtros limpos no módulo Duração');
+        loadDuracaoData();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Valores - Nexo Estratégico{% endblock %}
+
+{% block extra_css %}
+<style>
+    .valores-container {
+        padding: 20px;
+    }
+
+    .chart-card {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .chart-title {
+        font-size: 16px;
+        color: #5a6c7d;
+        font-weight: 500;
+    }
+
+    .chart-subtitle {
+        display: inline-block;
+        background: #e8f4f8;
+        color: #2196F3;
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 12px;
+        margin-left: 10px;
+    }
+
+    .filter-section {
+        margin-bottom: 20px;
+    }
+
+    .filter-label {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .filter-buttons {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        padding: 8px 16px;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 13px;
+        color: #666;
+        transition: all 0.3s;
+    }
+
+    .filter-btn:hover {
+        border-color: #2196F3;
+        color: #2196F3;
+    }
+
+    .filter-btn.active {
+        background: #2196F3;
+        color: white;
+        border-color: #2196F3;
+    }
+
+    .chart-container {
+        height: 400px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    /* Scrollbar styling */
+    .chart-container::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .chart-container::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+
+    .chart-container::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+
+    .chart-container::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="valores-container">
+    <h1 style="color: #5a6c7d; margin-bottom: 30px;">Valores</h1>
+
+    <!-- Ranking de Valores -->
+    <div class="chart-card">
+        <div class="chart-header">
+            <div>
+                <span class="chart-title">Ranking de valores</span>
+                <span class="chart-subtitle">Média</span>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filter-section">
+            <label class="filter-label">Tipo de valor</label>
+            <div class="filter-buttons" id="tipo-valor-buttons">
+                <button class="filter-btn active" data-tipo="causa">Causa</button>
+                <button class="filter-btn" data-tipo="condenacao">Condenação</button>
+                <button class="filter-btn" data-tipo="custas">Custas</button>
+                <button class="filter-btn" data-tipo="liquidacao">Liquidação</button>
+                <button class="filter-btn" data-tipo="acordo">Acordo</button>
+            </div>
+        </div>
+
+        <div class="filter-section">
+            <label class="filter-label">Agrupamento</label>
+            <div class="filter-buttons" id="agrupamento-buttons">
+                <button class="filter-btn active" data-agrupamento="comarca">Comarca</button>
+                <button class="filter-btn" data-agrupamento="classe">Classe</button>
+                <button class="filter-btn" data-agrupamento="assuntos">Assuntos</button>
+                <button class="filter-btn" data-agrupamento="magistrado">Magistrado</button>
+                <button class="filter-btn" data-agrupamento="origem">Origem</button>
+                <button class="filter-btn" data-agrupamento="tribunal">Tribunal</button>
+                <button class="filter-btn" data-agrupamento="adv_polo_ativo">Adv. Polo Ativo</button>
+                <button class="filter-btn" data-agrupamento="cargo">Cargo</button>
+            </div>
+        </div>
+
+        <!-- Gráfico -->
+        <div class="chart-container">
+            <div id="ranking-valores-chart"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+<script src="{% static 'core/js/valores-charts.js' %}?v=20251126"></script>
+<script>
+    // Inicializar gráficos quando a página carregar
+    document.addEventListener('DOMContentLoaded', function() {
+        carregarGraficoRankingValores();
+        
+        // Event listeners para filtros de tipo de valor
+        document.querySelectorAll('#tipo-valor-buttons .filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#tipo-valor-buttons .filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                carregarGraficoRankingValores();
+            });
+        });
+        
+        // Event listeners para filtros de agrupamento
+        document.querySelectorAll('#agrupamento-buttons .filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#agrupamento-buttons .filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                carregarGraficoRankingValores();
+            });
+        });
+    });
+</script>
+{% endblock %}

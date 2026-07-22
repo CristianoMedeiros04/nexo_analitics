@@ -1,0 +1,373 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Lista de Processos - Nexo Estratégico{% endblock %}
+
+{% block extra_css %}
+<style>
+    .search-container {
+        margin-bottom: 30px;
+    }
+    
+    .search-input {
+        width: 100%;
+        padding: 15px;
+        font-size: 16px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .search-input:focus {
+        outline: none;
+        border-color: #2196F3;
+        box-shadow: 0 2px 8px rgba(33,150,243,0.3);
+    }
+    
+    .processo-card {
+        margin-bottom: 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: box-shadow 0.3s;
+    }
+    
+    .processo-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    
+    .processo-header {
+        padding: 20px;
+        background-color: #f5f5f5;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background-color 0.3s;
+    }
+    
+    .processo-header:hover {
+        background-color: #eeeeee;
+    }
+    
+    .processo-header.active {
+        background-color: #2196F3;
+        color: white;
+    }
+    
+    .processo-info {
+        flex: 1;
+    }
+    
+    .processo-numero {
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 8px;
+        color: #1976D2;
+    }
+    
+    .processo-header.active .processo-numero {
+        color: white;
+    }
+    
+    .processo-tribunal {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 5px;
+    }
+    
+    .processo-header.active .processo-tribunal {
+        color: rgba(255,255,255,0.9);
+    }
+    
+    .processo-partes {
+        font-size: 14px;
+        color: #888;
+    }
+    
+    .processo-header.active .processo-partes {
+        color: rgba(255,255,255,0.8);
+    }
+    
+    .processo-icon {
+        font-size: 24px;
+        transition: transform 0.3s;
+    }
+    
+    .processo-header.active .processo-icon {
+        transform: rotate(180deg);
+    }
+    
+    .processo-body {
+        padding: 25px;
+        background-color: white;
+        display: none;
+    }
+    
+    .processo-body.show {
+        display: block;
+    }
+    
+    .processo-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+    }
+    
+    .detail-item {
+        padding: 15px;
+        background-color: #f9f9f9;
+        border-radius: 6px;
+        border-left: 4px solid #2196F3;
+    }
+    
+    .detail-label {
+        font-size: 12px;
+        font-weight: bold;
+        color: #666;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+    }
+    
+    .detail-value {
+        font-size: 15px;
+        color: #333;
+        word-wrap: break-word;
+    }
+    
+    .no-results {
+        text-align: center;
+        padding: 60px 20px;
+        color: #999;
+        font-size: 18px;
+    }
+    
+    .results-count {
+        margin-bottom: 20px;
+        font-size: 16px;
+        color: #666;
+    }
+    
+    .results-count strong {
+        color: #2196F3;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h2 class="mb-4">Lista de Processos</h2>
+            
+            <!-- Campo de Pesquisa -->
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    class="search-input" 
+                    placeholder="🔍 Pesquisar por número, partes, comarca, tribunal, advogados, juízes..."
+                    autocomplete="off"
+                >
+            </div>
+            
+            <!-- Contador de Resultados -->
+            <div class="results-count">
+                Mostrando <strong id="resultsCount">{{ processos.count }}</strong> processo(s)
+            </div>
+            
+            <!-- Lista de Processos (Accordion) -->
+            <div id="processosList">
+                {% for processo in processos %}
+                <div class="processo-card" data-searchable="{{ processo.numero_processo|default:'' }} {{ processo.tribunal|default:'' }} {{ processo.partes_polo_ativo|default:'' }} {{ processo.partes_polo_passivo|default:'' }} {{ processo.comarca|default:'' }} {{ processo.advogados_polo_ativo|default:'' }} {{ processo.advogados_polo_passivo|default:'' }} {{ processo.juizes|default:'' }}">
+                    <div class="processo-header" onclick="toggleProcesso(this)">
+                        <div class="processo-info">
+                            <div class="processo-numero">
+                                {{ processo.numero_processo|default:"Número não informado" }}
+                            </div>
+                            <div class="processo-tribunal">
+                                <strong>Tribunal:</strong> {{ processo.tribunal|default:"Não informado" }}
+                            </div>
+                            <div class="processo-partes">
+                                <strong>Partes:</strong> {{ processo.partes_polo_ativo|default:"Não informado" }} × {{ processo.partes_polo_passivo|default:"Não informado" }}
+                            </div>
+                        </div>
+                        <div class="processo-icon">
+                            <span class="material-icons">expand_more</span>
+                        </div>
+                    </div>
+                    <div class="processo-body">
+                        <div class="processo-details">
+                            <div class="detail-item">
+                                <div class="detail-label">Número do Processo</div>
+                                <div class="detail-value">{{ processo.numero_processo|default:"Não informado" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Tribunal</div>
+                                <div class="detail-value">{{ processo.tribunal|default:"Não informado" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Comarca</div>
+                                <div class="detail-value">{{ processo.comarca|default:"Não informado" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">UF</div>
+                                <div class="detail-value">{{ processo.uf|default:"Não informado" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Vara</div>
+                                <div class="detail-value">{{ processo.vara|default:"Não informado" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Classe</div>
+                                <div class="detail-value">{{ processo.classe|default:"Não informado" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Assuntos</div>
+                                <div class="detail-value">{{ processo.assuntos|default:"Não informado" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Data da Distribuição</div>
+                                <div class="detail-value">{{ processo.data_distribuicao|default:"Não informado" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Partes Polo Ativo</div>
+                                <div class="detail-value">{{ processo.partes_polo_ativo|default:"Não informado" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Partes Polo Passivo</div>
+                                <div class="detail-value">{{ processo.partes_polo_passivo|default:"Não informado" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Advogados Polo Ativo</div>
+                                <div class="detail-value">{{ processo.advogados_polo_ativo|default:"Não informado" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Advogados Polo Passivo</div>
+                                <div class="detail-value">{{ processo.advogados_polo_passivo|default:"Não informado" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Juízes</div>
+                                <div class="detail-value">{{ processo.juizes|default:"Não informado" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Desfecho</div>
+                                <div class="detail-value">{{ processo.desfecho|default:"Não informado" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Fase</div>
+                                <div class="detail-value">{{ processo.fase|default:"Não informado" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Instância</div>
+                                <div class="detail-value">{{ processo.instancia|default:"Não informado" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Valor da Causa</div>
+                                <div class="detail-value">{{ processo.valor_causa|default:"Não informado" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Valor da Condenação</div>
+                                <div class="detail-value">{{ processo.valor_condenacao|default:"Não informado" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Valor do Acordo</div>
+                                <div class="detail-value">{{ processo.valor_acordo|default:"Não informado" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Data da Sentença</div>
+                                <div class="detail-value">{{ processo.data_sentenca|default:"Não informado" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Data do Trânsito em Julgado</div>
+                                <div class="detail-value">{{ processo.data_transito_julgado|default:"Não informado" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Data do Arquivamento</div>
+                                <div class="detail-value">{{ processo.data_arquivamento|default:"Não informado" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Data do Último Movimento</div>
+                                <div class="detail-value">{{ processo.data_ultimo_movimento|default:"Não informado" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Indicativo de Revelia</div>
+                                <div class="detail-value">{{ processo.indicativo_revelia|default:"Não informado" }}</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Justiça Gratuita</div>
+                                <div class="detail-value">{{ processo.justica_gratuita|default:"Não informado" }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="no-results">
+                    Nenhum processo encontrado.
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Mensagem de Nenhum Resultado (oculta inicialmente) -->
+            <div id="noResultsMessage" class="no-results" style="display: none;">
+                Nenhum processo encontrado com os termos pesquisados.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Função para expandir/colapsar processo
+    function toggleProcesso(header) {
+        const body = header.nextElementSibling;
+        const isActive = header.classList.contains('active');
+        
+        // Fechar todos os outros processos
+        document.querySelectorAll('.processo-header.active').forEach(h => {
+            h.classList.remove('active');
+            h.nextElementSibling.classList.remove('show');
+        });
+        
+        // Toggle do processo clicado
+        if (!isActive) {
+            header.classList.add('active');
+            body.classList.add('show');
+        }
+    }
+    
+    // Função de filtro em tempo real
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase().trim();
+        const cards = document.querySelectorAll('.processo-card');
+        let visibleCount = 0;
+        
+        cards.forEach(card => {
+            const searchableText = card.getAttribute('data-searchable').toLowerCase();
+            
+            if (searchableText.includes(searchTerm)) {
+                card.style.display = 'block';
+                visibleCount++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+        
+        // Atualizar contador de resultados
+        document.getElementById('resultsCount').textContent = visibleCount;
+        
+        // Mostrar/ocultar mensagem de nenhum resultado
+        const noResultsMsg = document.getElementById('noResultsMessage');
+        const processosList = document.getElementById('processosList');
+        
+        if (visibleCount === 0 && searchTerm !== '') {
+            noResultsMsg.style.display = 'block';
+            processosList.style.display = 'none';
+        } else {
+            noResultsMsg.style.display = 'none';
+            processosList.style.display = 'block';
+        }
+    });
+</script>
+{% endblock %}

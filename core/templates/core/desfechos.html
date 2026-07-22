@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Desfechos - Nexo Estratégico{% endblock %}
+
+{% block content %}
+<style>
+    .chart-card {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .chart-card h5 {
+        font-size: 14px;
+        font-weight: 600;
+        color: #666;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+    }
+    
+    .chart-container {
+        height: 400px;
+        overflow-y: auto;
+    }
+    
+    .ranking-header {
+        margin-bottom: 20px;
+    }
+    
+    .ranking-dropdown {
+        margin-bottom: 15px;
+    }
+    
+    .ranking-dropdown select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        color: #666;
+    }
+    
+    .ranking-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .ranking-tab {
+        padding: 8px 16px;
+        border: 1px solid #2b538f;
+        border-radius: 20px;
+        background: white;
+        color: #2b538f;
+        cursor: pointer;
+        font-size: 13px;
+        transition: all 0.3s;
+    }
+    
+    .ranking-tab:hover {
+        background: #e8f4f8;
+    }
+    
+    .ranking-tab.active {
+        background: #2b538f;
+        color: white;
+    }
+</style>
+
+<div class="container-fluid mt-4">
+    <h4 style="color: #2b538f; margin-bottom: 20px;">Desfechos</h4>
+    
+    <!-- FAIXA 1: Volume de processos por tipo de desfecho -->
+    <div class="row">
+        <div class="col-12">
+            <div class="chart-card">
+                <h5>Volume de processos por tipo de desfecho <span style="color: #2b538f;">Total</span></h5>
+                <div class="chart-container" id="grafico-volume-desfechos"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- FAIXA 2: Ranking por tipo de desfecho -->
+    <div class="row">
+        <div class="col-12">
+            <div class="chart-card">
+                <h5>Ranking por tipo de desfecho <span style="color: #2b538f;">Total</span></h5>
+                
+                <div class="ranking-header">
+                    <!-- Dropdown para selecionar tipo de desfecho -->
+                    <div class="ranking-dropdown">
+                        <select id="desfecho-selector" class="form-select">
+                            <option value="todos">Tipos de desfecho</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Tabs de agrupamento -->
+                    <div class="ranking-tabs">
+                        <button class="ranking-tab active" data-criterio="comarca">Comarca</button>
+                        <button class="ranking-tab" data-criterio="classe">Classe</button>
+                        <button class="ranking-tab" data-criterio="assuntos">Assuntos</button>
+                        <button class="ranking-tab" data-criterio="magistrado">Magistrado</button>
+                        <button class="ranking-tab" data-criterio="origem">Origem</button>
+                        <button class="ranking-tab" data-criterio="atividade_economica">Atividade econômica</button>
+                        <button class="ranking-tab" data-criterio="tribunal">Tribunal</button>
+                        <button class="ranking-tab" data-criterio="advogado_ativo">Adv. Polo Ativo</button>
+                        <button class="ranking-tab" data-criterio="cargo">Cargo</button>
+                    </div>
+                </div>
+                
+                <div class="chart-container" id="grafico-ranking-desfechos"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- FAIXA 3: Decisões de processos por instâncias -->
+    <div class="row">
+        <div class="col-12">
+            <div class="chart-card">
+                <h5>Decisões de processos por instâncias <span style="color: #2b538f;">Total</span></h5>
+                <div class="chart-container" id="grafico-decisoes-instancias"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'core/js/desfechos-charts.js' %}"></script>
+<script>
+    // Função para carregar dados de desfechos
+    function loadDesfechosData(filters = null) {
+        let fetchPromise;
+        
+        if (filters) {
+            const csrftoken = getCookie('csrftoken');
+            fetchPromise = fetch('/api/desfechos-data/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify(filters)
+            });
+        } else {
+            fetchPromise = fetch('/api/desfechos-data/');
+        }
+        
+        fetchPromise
+            .then(response => response.json())
+            .then(data => {
+                console.log('Dados de desfechos recebidos:', data);
+                
+                // Criar gráficos
+                criarGraficoVolumeDesfechos(data.volume_desfechos);
+                criarRankingDesfechos(data.ranking_desfechos);
+                criarGraficoDecisoesInstancias(data.decisoes_instancias);
+            })
+            .catch(error => {
+                console.error('Erro ao carregar dados de desfechos:', error);
+            });
+    }
+    
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Carregar dados inicialmente
+    loadDesfechosData();
+    
+    // Listener para filtros aplicados
+    document.addEventListener('filtersApplied', function(event) {
+        console.log('Filtros aplicados no módulo Desfechos:', event.detail);
+        loadDesfechosData(event.detail);
+    });
+    
+    // Listener para limpar filtros
+    document.addEventListener('filtersCleared', function() {
+        console.log('Filtros limpos no módulo Desfechos');
+        loadDesfechosData();
+    });
+</script>
+{% endblock %}

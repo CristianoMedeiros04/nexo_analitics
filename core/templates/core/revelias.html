@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Revelias - Nexo Estratégico{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chart-container {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .chart-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 15px;
+    }
+    
+    .chart-wrapper {
+        height: 400px;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+    
+    .criterio-buttons {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+    }
+    
+    .criterio-btn {
+        padding: 8px 16px;
+        border: 1px solid #ddd;
+        background: white;
+        border-radius: 20px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s;
+    }
+    
+    .criterio-btn:hover {
+        background: #f5f5f5;
+    }
+    
+    .criterio-btn.active {
+        background: #4285f4;
+        color: white;
+        border-color: #4285f4;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="mb-4">Revelias</h1>
+    
+    <!-- Gráfico 1: Volume de revelias -->
+    <div class="chart-container">
+        <div class="chart-title">Volume de revelias <span style="color: #999; font-size: 14px;">Total</span></div>
+        <div class="chart-wrapper">
+            <div id="grafico-volume-revelias"></div>
+        </div>
+    </div>
+    
+    <!-- Gráfico 2: Ranking de revelias -->
+    <div class="chart-container">
+        <div class="chart-title">Ranking de revelias <span style="color: #999; font-size: 14px;">Total</span></div>
+        <div style="margin-bottom: 10px; color: #666; font-size: 14px;">Agrupamento</div>
+        <div class="criterio-buttons">
+            <button class="criterio-btn active" data-criterio="Comarca">Comarca</button>
+            <button class="criterio-btn" data-criterio="Classe">Classe</button>
+            <button class="criterio-btn" data-criterio="Assuntos">Assuntos</button>
+            <button class="criterio-btn" data-criterio="Magistrado">Magistrado</button>
+            <button class="criterio-btn" data-criterio="Origem">Origem</button>
+            <button class="criterio-btn" data-criterio="Tribunal">Tribunal</button>
+            <button class="criterio-btn" data-criterio="Adv. Polo Ativo">Adv. Polo Ativo</button>
+            <button class="criterio-btn" data-criterio="Cargo">Cargo</button>
+        </div>
+        <div class="chart-wrapper">
+            <div id="grafico-ranking-revelias"></div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+<script src="{% static 'core/js/revelias-charts.js' %}"></script>
+<script>
+    // Carregar dados iniciais
+    carregarDadosRevelias({});
+    
+    // Event listener para filtro global
+    document.addEventListener('filterApplied', function(e) {
+        carregarDadosRevelias(e.detail.filtros);
+    });
+</script>
+{% endblock %}

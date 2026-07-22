@@ -1,0 +1,15 @@
+asgiref==3.11.0
+Django==5.0
+django-cors-headers==4.3.1
+django-filter==23.5
+djangorestframework==3.14.0
+gunicorn==21.2.0
+packaging==25.0
+pillow==12.0.0
+pytz==2025.2
+sqlparse==0.5.3
+
+# Produção / Railway
+dj-database-url==2.3.0
+PyMySQL==1.1.1
+whitenoise==6.8.2

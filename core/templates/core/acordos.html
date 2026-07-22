@@ -1,0 +1,254 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Acordos - Nexo Estratégico{% endblock %}
+
+{% block content %}
+<style>
+    .chart-card {
+        background: white;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    
+    .chart-card h5 {
+        font-size: 14px;
+        font-weight: 600;
+        color: #666;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+    }
+    
+    .chart-container {
+        height: 400px;
+        overflow-y: auto;
+    }
+    
+    .ranking-selector {
+        margin-bottom: 15px;
+    }
+    
+    .ranking-selector select {
+        padding: 8px 12px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        color: #666;
+        background: white;
+        cursor: pointer;
+    }
+    
+    .ranking-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+        padding: 8px;
+        border-radius: 4px;
+        transition: background 0.2s;
+    }
+    
+    .ranking-item:hover {
+        background: #f8f9fa;
+    }
+    
+    .ranking-position {
+        font-weight: 600;
+        color: #2b538f;
+        min-width: 30px;
+    }
+    
+    .ranking-name {
+        flex: 1;
+        font-size: 13px;
+        color: #666;
+        margin-right: 10px;
+    }
+    
+    .ranking-bar-container {
+        flex: 2;
+        height: 20px;
+        background: #e0e0e0;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-right: 10px;
+    }
+    
+    .ranking-bar {
+        height: 100%;
+        background: #2b538f;
+        border-radius: 10px;
+        transition: width 0.3s;
+    }
+    
+    .ranking-value {
+        font-weight: 600;
+        color: #333;
+        min-width: 60px;
+        text-align: right;
+        font-size: 13px;
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- FAIXA 1: Proporção de acordos -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="chart-card">
+                <h5>Proporção de acordos entre o total de processos (Total)</h5>
+                <div id="grafico-proporcao-acordos" class="chart-container"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- FAIXA 2: Homologação por fase e Volume por ano -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="chart-card">
+                <h5>Homologação de acordos por fase (Total)</h5>
+                <div id="grafico-acordos-fase" class="chart-container"></div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-card">
+                <h5>Volume de acordos homologados por ano (Total)</h5>
+                <div id="grafico-volume-acordos" class="chart-container"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- FAIXA 3: Comparações de valores -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="chart-card">
+                <h5>Relação entre valor de causa e valor de acordo (Média)</h5>
+                <div id="grafico-causa-acordo" class="chart-container"></div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="chart-card">
+                <h5>Relação entre valor de condenação e valor de acordo (Média)</h5>
+                <div id="grafico-condenacao-acordo" class="chart-container"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- FAIXA 4: Ranking de acordos -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="chart-card">
+                <h5>Ranking de quantidade de acordo (Total)</h5>
+                <div class="ranking-selector">
+                    <select id="ranking-criterio">
+                        <option value="comarca">Comarca</option>
+                        <option value="classe">Classe</option>
+                        <option value="assuntos">Assuntos</option>
+                        <option value="magistrado">Magistrado</option>
+                        <option value="origem">Origem</option>
+                        <option value="tribunal">Tribunal</option>
+                        <option value="advogado_ativo">Adv. Polo Ativo</option>
+                        <option value="cargo">Cargo</option>
+                    </select>
+                </div>
+                <div id="ranking-acordos" class="chart-container"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const COLORS = {
+        primary: '#2b538f',
+        secondary: '#4a90e2',
+        success: '#28a745',
+        warning: '#ffc107',
+        danger: '#dc3545',
+        light: '#e8f4f8'
+    };
+    
+    // Função para formatar números
+    function formatNumber(num) {
+        if (num === null || num === undefined || isNaN(num)) return '0';
+        return new Intl.NumberFormat('pt-BR').format(Math.round(num));
+    }
+    
+    // Função para formatar moeda
+    function formatCurrency(value) {
+        if (value === null || value === undefined || isNaN(value)) return 'R$ 0,00';
+        return new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        }).format(value);
+    }
+    
+    // Carregar dados de acordos
+    function loadAcordosData(filters = null) {
+        let fetchPromise;
+        
+        if (filters && Object.keys(filters).length > 0) {
+            fetchPromise = fetch('/api/acordos-data/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(filters)
+            });
+        } else {
+            fetchPromise = fetch('/api/acordos-data/');
+        }
+        
+        fetchPromise
+            .then(response => response.json())
+            .then(data => {
+                console.log('Dados de acordos recebidos:', data);
+                
+                // Criar gráficos
+                criarGraficoProporcaoAcordos(data.proporcao_acordos);
+                criarGraficoAcordosFase(data.acordos_por_fase);
+                criarGraficoVolumeAcordos(data.volume_acordos);
+                criarGraficoCausaAcordo(data.causa_vs_acordo);
+                criarGraficoCondenacaoAcordo(data.condenacao_vs_acordo);
+                criarRankingAcordos(data.ranking_acordos);
+            })
+            .catch(error => {
+                console.error('Erro ao carregar dados de acordos:', error);
+            });
+    }
+    
+    // Helper function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    
+    // Carregar dados inicialmente
+    loadAcordosData();
+    
+    // Listener para filtros aplicados
+    document.addEventListener('filtersApplied', function(event) {
+        console.log('Filtros aplicados em Acordos, recarregando...', event.detail);
+        loadAcordosData(event.detail);
+    });
+    
+    // Listener para filtros limpos
+    document.addEventListener('filtersCleared', function() {
+        console.log('Filtros limpos em Acordos, recarregando...');
+        loadAcordosData();
+    });
+    
+    // Incluir funções de criação de gráficos
+</script>
+<script src="{% static 'core/js/acordos-charts.js' %}"></script>
+{% endblock %}

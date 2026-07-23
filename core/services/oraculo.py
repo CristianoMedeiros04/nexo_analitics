@@ -174,6 +174,19 @@ def executar_consulta(spec):
     # ---------- fonte pedidos ----------
     if fonte == "pedidos":
         pp = PedidoProcesso.objects.filter(processo__in=qs)
+        if metrica == "taxa_deferimento" and dim not in ("pedido",):
+            # taxa global sobre todos os pedidos julgados
+            g = {"d": 0, "p": 0, "i": 0, "t": 0}
+            for r in pp.values_list("resultado", flat=True):
+                g["t"] += 1
+                if r == "DEFERIMENTO": g["d"] += 1
+                elif r == "DEFERIMENTO PARCIAL": g["p"] += 1
+                elif r == "INDEFERIMENTO": g["i"] += 1
+            jul = g["d"] + g["p"] + g["i"]
+            return {"tipo": "escalar", "metrica": "taxa_deferimento",
+                    "taxa_deferimento": round(100*(g["d"]+0.5*g["p"])/jul, 1) if jul else None,
+                    "deferimentos": g["d"], "parciais": g["p"], "indeferimentos": g["i"],
+                    "julgados": jul, "total_pedidos": g["t"]}
         if dim in ("pedido", "resultado_pedido"):
             campo = "catalogo__nome" if dim == "pedido" else "resultado"
             if metrica == "taxa_deferimento" and dim == "pedido":

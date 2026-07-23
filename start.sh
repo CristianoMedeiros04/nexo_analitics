@@ -27,6 +27,11 @@ if [ "${SEED_DATA:-false}" = "true" ]; then
   python manage.py carregar_dados_seed || echo "!! Falha no seed (seguindo)"
 fi
 
+if [ "${APENAS_CONTROLJUS:-false}" = "true" ]; then
+  echo ">> Mantendo somente processos do ControlJus (APENAS_CONTROLJUS=true)..."
+  python manage.py usar_somente_controljus || echo "!! Falha na limpeza (seguindo)"
+fi
+
 echo ">> Iniciando Gunicorn na porta ${PORT:-8000}..."
 exec gunicorn jurimetria.wsgi:application \
   --bind "0.0.0.0:${PORT:-8000}" \

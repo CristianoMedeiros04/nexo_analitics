@@ -11,13 +11,12 @@ A materialização das colunas legadas acontece dentro de cada etapa.
 Projetado para rodar como serviço cron: executa e termina.
 """
 
-import os
-
 from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
 from core.models import SincronizacaoLog
+from core.services.ia import provedor_disponivel
 
 
 class Command(BaseCommand):
@@ -36,13 +35,13 @@ class Command(BaseCommand):
             etapas["cj_sincronizar"] = "ok"
 
             self.stdout.write("=== [2/2] Análise IA ===")
-            if os.environ.get("ANTHROPIC_API_KEY"):
+            if provedor_disponivel():
                 call_command("ia_analisar", limite=options["limite_ia"])
-                etapas["ia_analisar"] = "ok"
+                etapas["ia_analisar"] = f"ok ({provedor_disponivel()})"
             else:
-                etapas["ia_analisar"] = "pulado (ANTHROPIC_API_KEY ausente)"
+                etapas["ia_analisar"] = "pulado (nenhuma chave de IA configurada)"
                 self.stdout.write(self.style.WARNING(
-                    "ANTHROPIC_API_KEY ausente — etapa de IA pulada."
+                    "DEEPSEEK_API_KEY/ANTHROPIC_API_KEY ausentes — etapa de IA pulada."
                 ))
 
             log.status = "sucesso"

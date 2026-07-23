@@ -115,7 +115,6 @@ class Command(BaseCommand):
                     "fundamentacao": p.get("fundamentacao", "")[:2000],
                     "confianca_ia": confianca,
                     "fonte": "ia",
-                    "decisao": decisao,
                 },
             )
             if not criado:
@@ -126,7 +125,6 @@ class Command(BaseCommand):
                     obj.instancia = decisao.grau or obj.instancia
                     obj.confianca_ia = confianca
                     obj.fonte = "ia"
-                    obj.decisao = decisao
                     if p.get("valor") is not None and obj.valor_pleiteado is None:
                         obj.valor_pleiteado = p["valor"]
                     obj.save()

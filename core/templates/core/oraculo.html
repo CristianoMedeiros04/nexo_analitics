@@ -1,0 +1,325 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Oráculo - Nexo Analitics{% endblock %}
+
+{% block content %}
+<style>
+    /* ============ ORÁCULO ============ */
+    .orc-wrap {
+        display:flex; flex-direction:column;
+        height:calc(100vh - var(--topbar-h) - 66px);
+        max-width:960px; margin:0 auto;
+    }
+    .orc-head { flex:0 0 auto; margin-bottom:14px; display:flex; align-items:center; gap:14px; }
+    .orc-badge {
+        width:46px; height:46px; border-radius:14px; flex:0 0 auto;
+        background:linear-gradient(135deg,#f59e0b,#f97316); color:#fff;
+        display:flex; align-items:center; justify-content:center;
+        box-shadow:0 10px 24px -8px rgba(245,158,11,.6);
+    }
+    .orc-badge .material-icons-round { font-size:26px; }
+    .orc-head h1 { font-size:21px; font-weight:800; letter-spacing:-.03em; margin:0; }
+    .orc-head p { color:var(--muted); font-size:13px; margin:2px 0 0; }
+
+    /* stream */
+    .orc-stream {
+        flex:1 1 auto; overflow-y:auto; padding:8px 4px 4px;
+        display:flex; flex-direction:column; gap:18px;
+        scrollbar-width:thin; scrollbar-color:var(--line-2) transparent;
+    }
+    .orc-stream::-webkit-scrollbar { width:7px; }
+    .orc-stream::-webkit-scrollbar-thumb { background:var(--line-2); border-radius:20px; }
+    .orc-stream::-webkit-scrollbar-track { background:transparent; }
+
+    /* welcome / empty state */
+    .orc-welcome { margin:auto 0; text-align:center; padding:14px 0 6px; }
+    .orc-welcome-orb {
+        width:76px; height:76px; border-radius:24px; margin:0 auto 18px;
+        background:linear-gradient(135deg,#f59e0b,#f97316); color:#fff;
+        display:flex; align-items:center; justify-content:center;
+        box-shadow:0 20px 44px -14px rgba(245,158,11,.65);
+        animation:orbFloat 4s ease-in-out infinite;
+    }
+    @keyframes orbFloat { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+    .orc-welcome-orb .material-icons-round { font-size:40px; }
+    .orc-welcome h2 { font-size:22px; font-weight:800; letter-spacing:-.03em; margin:0 0 6px; }
+    .orc-welcome p { color:var(--muted); font-size:14px; max-width:520px; margin:0 auto 22px; line-height:1.55; }
+    .orc-suggest { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; max-width:720px; margin:0 auto; }
+    .orc-chip {
+        background:var(--surface); border:1px solid var(--line-2); border-radius:12px;
+        padding:11px 14px; font-size:12.8px; font-weight:500; color:var(--ink-2);
+        cursor:pointer; text-align:left; transition:all .16s var(--ease);
+        display:flex; align-items:center; gap:9px; max-width:330px;
+    }
+    .orc-chip .material-icons-round { font-size:18px; color:#f59e0b; flex:0 0 auto; }
+    .orc-chip:hover { border-color:#f59e0b; box-shadow:0 8px 20px -12px rgba(245,158,11,.5); transform:translateY(-1px); }
+
+    /* messages */
+    .orc-msg { display:flex; gap:12px; align-items:flex-start; max-width:100%; }
+    .orc-msg.user { flex-direction:row-reverse; }
+    .orc-avatar {
+        width:34px; height:34px; border-radius:11px; flex:0 0 auto;
+        display:flex; align-items:center; justify-content:center; font-size:19px;
+    }
+    .orc-msg.ai .orc-avatar { background:linear-gradient(135deg,#f59e0b,#f97316); color:#fff; }
+    .orc-msg.user .orc-avatar { background:linear-gradient(135deg,var(--brand-1),var(--brand-3)); color:#fff; font-weight:700; font-size:13px; }
+    .orc-bubble {
+        border-radius:15px; padding:13px 16px; font-size:14px; line-height:1.62;
+        max-width:min(680px, 82%); word-wrap:break-word;
+    }
+    .orc-msg.user .orc-bubble { background:linear-gradient(135deg,var(--brand-1),var(--brand-2)); color:#fff; border-top-right-radius:5px; }
+    .orc-msg.ai .orc-bubble { background:var(--surface); border:1px solid var(--line); color:var(--ink-2); border-top-left-radius:5px; }
+
+    /* markdown inside bubble */
+    .orc-bubble p { margin:0 0 9px; } .orc-bubble p:last-child { margin-bottom:0; }
+    .orc-bubble strong { color:var(--ink); font-weight:700; }
+    .orc-bubble ul, .orc-bubble ol { margin:6px 0 10px; padding-left:20px; }
+    .orc-bubble li { margin:3px 0; }
+    .orc-bubble h3 { font-size:14.5px; font-weight:800; margin:12px 0 6px; color:var(--ink); }
+    .orc-bubble h3:first-child { margin-top:0; }
+    .orc-bubble code { background:var(--surface-2); border:1px solid var(--line); border-radius:5px; padding:1px 5px; font-size:12.5px; font-family:ui-monospace,monospace; }
+    .orc-bubble table { border-collapse:collapse; margin:8px 0; font-size:12.8px; width:100%; }
+    .orc-bubble th, .orc-bubble td { border:1px solid var(--line-2); padding:5px 9px; text-align:left; }
+    .orc-bubble th { background:var(--surface-2); font-weight:700; color:var(--ink); }
+
+    /* tool trace */
+    .orc-trace { margin-top:9px; display:flex; flex-wrap:wrap; gap:6px; }
+    .orc-trace-item {
+        display:inline-flex; align-items:center; gap:5px; font-size:10.8px; font-weight:600;
+        color:var(--muted); background:var(--surface-2); border:1px solid var(--line);
+        border-radius:20px; padding:3px 9px;
+    }
+    .orc-trace-item .material-icons-round { font-size:13px; color:#f59e0b; }
+
+    /* typing */
+    .orc-typing { display:flex; gap:5px; align-items:center; padding:4px 2px; }
+    .orc-typing span { width:7px; height:7px; border-radius:50%; background:#f59e0b; opacity:.5; animation:orcBlink 1.3s infinite; }
+    .orc-typing span:nth-child(2){animation-delay:.2s} .orc-typing span:nth-child(3){animation-delay:.4s}
+    @keyframes orcBlink { 0%,60%,100%{opacity:.28;transform:translateY(0)} 30%{opacity:1;transform:translateY(-3px)} }
+
+    /* composer */
+    .orc-composer {
+        flex:0 0 auto; margin-top:14px;
+        background:var(--surface); border:1px solid var(--line-2); border-radius:16px;
+        padding:9px 10px 9px 16px; display:flex; align-items:flex-end; gap:10px;
+        box-shadow:0 10px 30px -18px rgba(15,23,42,.28); transition:border-color .16s;
+    }
+    .orc-composer:focus-within { border-color:#f59e0b; }
+    .orc-composer textarea {
+        flex:1 1 auto; border:none; outline:none; resize:none; background:transparent;
+        font:inherit; font-size:14px; color:var(--ink); line-height:1.5;
+        max-height:150px; padding:6px 0; font-family:inherit;
+    }
+    .orc-send {
+        width:40px; height:40px; border-radius:12px; border:none; flex:0 0 auto;
+        background:linear-gradient(135deg,#f59e0b,#f97316); color:#fff; cursor:pointer;
+        display:flex; align-items:center; justify-content:center; transition:all .16s;
+    }
+    .orc-send:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 8px 18px -8px rgba(245,158,11,.7); }
+    .orc-send:disabled { opacity:.4; cursor:not-allowed; }
+    .orc-hint { flex:0 0 auto; text-align:center; font-size:11px; color:var(--muted-2); margin-top:8px; }
+
+    .orc-disabled-note {
+        background:#fff7ed; border:1px solid #fed7aa; color:#9a3412; border-radius:12px;
+        padding:12px 16px; font-size:13px; margin-bottom:14px; display:flex; gap:10px; align-items:center;
+    }
+    .orc-disabled-note .material-icons-round { font-size:20px; color:#f59e0b; }
+
+    @media (max-width:640px){
+        .orc-wrap { height:calc(100vh - var(--topbar-h) - 40px); }
+        .orc-bubble { max-width:88%; }
+    }
+</style>
+
+<div class="orc-wrap">
+    <div class="orc-head">
+        <div class="orc-badge"><span class="material-icons-round">auto_awesome</span></div>
+        <div>
+            <h1>Oráculo</h1>
+            <p>Assistente de IA com acesso a toda a base de jurimetria — pergunte qualquer coisa.</p>
+        </div>
+    </div>
+
+    {% if not ia_disponivel %}
+    <div class="orc-disabled-note">
+        <span class="material-icons-round">info</span>
+        <span>O Oráculo requer uma chave de IA configurada no servidor. Em produção ele já está ativo; localmente defina <code>DEEPSEEK_API_KEY</code>.</span>
+    </div>
+    {% endif %}
+
+    <div class="orc-stream" id="orc-stream">
+        <div class="orc-welcome" id="orc-welcome">
+            <div class="orc-welcome-orb"><span class="material-icons-round">auto_awesome</span></div>
+            <h2>Como posso ajudar?</h2>
+            <p>Sou o Oráculo do Nexo Analitics. Tenho acesso a todos os processos, pedidos, valores e desfechos da base. Pergunte números, rankings, taxas de êxito — ou peça uma análise estratégica.</p>
+            <div class="orc-suggest" id="orc-suggest">
+                <button class="orc-chip"><span class="material-icons-round">trending_up</span>Quais pedidos têm maior taxa de deferimento?</button>
+                <button class="orc-chip"><span class="material-icons-round">gavel</span>Qual o desempenho por tribunal? Onde temos mais êxito?</button>
+                <button class="orc-chip"><span class="material-icons-round">payments</span>Qual o valor total em causa e a média por processo?</button>
+                <button class="orc-chip"><span class="material-icons-round">insights</span>Faça um diagnóstico estratégico da carteira de processos.</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="orc-composer">
+        <textarea id="orc-input" rows="1" placeholder="Pergunte ao Oráculo sobre os dados..."{% if not ia_disponivel %} disabled{% endif %}></textarea>
+        <button class="orc-send" id="orc-send"{% if not ia_disponivel %} disabled{% endif %} title="Enviar">
+            <span class="material-icons-round">arrow_upward</span>
+        </button>
+    </div>
+    <div class="orc-hint">O Oráculo consulta o banco em tempo real. Enter envia • Shift+Enter quebra linha.</div>
+</div>
+
+<script>
+(function(){
+    const stream  = document.getElementById('orc-stream');
+    const welcome = document.getElementById('orc-welcome');
+    const input   = document.getElementById('orc-input');
+    const sendBtn = document.getElementById('orc-send');
+    const historico = [];
+    let busy = false;
+
+    function getCookie(name){
+        let v=null;
+        if(document.cookie){
+            for(const c of document.cookie.split(';')){
+                const t=c.trim();
+                if(t.startsWith(name+'=')){ v=decodeURIComponent(t.substring(name.length+1)); break; }
+            }
+        }
+        return v;
+    }
+
+    // -------- minimal, safe markdown renderer --------
+    function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function inline(s){
+        s = esc(s);
+        s = s.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
+        s = s.replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>');
+        s = s.replace(/`([^`]+)`/g,'<code>$1</code>');
+        return s;
+    }
+    function renderMarkdown(text){
+        const lines = (text||'').replace(/\r/g,'').split('\n');
+        let html='', list=null, tbl=null;
+        const closeList=()=>{ if(list){ html+=`</${list}>`; list=null; } };
+        const flushTbl=()=>{
+            if(!tbl) return;
+            html+='<table>';
+            tbl.forEach((row,ri)=>{
+                if(ri===1 && /^[\s|:-]+$/.test(row.join(''))) return;
+                const tag = ri===0 ? 'th':'td';
+                html+='<tr>'+row.map(c=>`<${tag}>${inline(c.trim())}</${tag}>`).join('')+'</tr>';
+            });
+            html+='</table>'; tbl=null;
+        };
+        for(let raw of lines){
+            const line = raw.replace(/\s+$/,'');
+            if(/^\s*\|.*\|\s*$/.test(line)){
+                closeList();
+                const cells = line.trim().replace(/^\||\|$/g,'').split('|');
+                (tbl=tbl||[]).push(cells); continue;
+            } else flushTbl();
+            if(!line.trim()){ closeList(); continue; }
+            let m;
+            if((m=line.match(/^#{1,4}\s+(.*)/))){ closeList(); html+=`<h3>${inline(m[1])}</h3>`; continue; }
+            if((m=line.match(/^\s*[-*•]\s+(.*)/))){
+                if(list!=='ul'){ closeList(); html+='<ul>'; list='ul'; }
+                html+=`<li>${inline(m[1])}</li>`; continue;
+            }
+            if((m=line.match(/^\s*\d+[.)]\s+(.*)/))){
+                if(list!=='ol'){ closeList(); html+='<ol>'; list='ol'; }
+                html+=`<li>${inline(m[1])}</li>`; continue;
+            }
+            closeList();
+            html+=`<p>${inline(line)}</p>`;
+        }
+        closeList(); flushTbl();
+        return html || '<p></p>';
+    }
+
+    const TOOL_LABEL = { consultar_banco:'Consultou o banco', detalhar_processo:'Detalhou processo' };
+
+    function addMessage(role, contentHtml, trace){
+        if(welcome && welcome.parentNode) welcome.remove();
+        const msg = document.createElement('div');
+        msg.className = 'orc-msg ' + (role==='user'?'user':'ai');
+        const av = document.createElement('div');
+        av.className = 'orc-avatar';
+        av.innerHTML = role==='user' ? 'EU' : '<span class="material-icons-round">auto_awesome</span>';
+        const bub = document.createElement('div');
+        bub.className = 'orc-bubble';
+        bub.innerHTML = contentHtml;
+        if(trace && trace.length){
+            const t = document.createElement('div');
+            t.className='orc-trace';
+            const seen = {};
+            trace.forEach(c=>{
+                const key = c.ferramenta + JSON.stringify(c.args||{});
+                if(seen[key]) return; seen[key]=1;
+                const it=document.createElement('span'); it.className='orc-trace-item';
+                let detail = TOOL_LABEL[c.ferramenta] || c.ferramenta;
+                if(c.args && c.args.agrupar_por) detail += ' · '+c.args.agrupar_por;
+                else if(c.args && c.args.metrica) detail += ' · '+c.args.metrica;
+                it.innerHTML='<span class="material-icons-round">bolt</span>'+detail;
+                t.appendChild(it);
+            });
+            bub.appendChild(t);
+        }
+        msg.appendChild(av); msg.appendChild(bub);
+        stream.appendChild(msg);
+        stream.scrollTop = stream.scrollHeight;
+        return bub;
+    }
+
+    function addTyping(){
+        const msg=document.createElement('div'); msg.className='orc-msg ai'; msg.id='orc-typing-row';
+        msg.innerHTML='<div class="orc-avatar"><span class="material-icons-round">auto_awesome</span></div>'+
+                      '<div class="orc-bubble"><div class="orc-typing"><span></span><span></span><span></span></div></div>';
+        stream.appendChild(msg); stream.scrollTop=stream.scrollHeight;
+    }
+    function removeTyping(){ const t=document.getElementById('orc-typing-row'); if(t) t.remove(); }
+
+    async function ask(pergunta){
+        if(busy || !pergunta.trim()) return;
+        busy = true; sendBtn.disabled = true;
+        addMessage('user', renderMarkdown(pergunta));
+        input.value=''; autoresize();
+        addTyping();
+        try{
+            const resp = await fetch("{% url 'api:oraculo-perguntar' %}", {
+                method:'POST',
+                headers:{'Content-Type':'application/json','X-CSRFToken':getCookie('csrftoken')},
+                body: JSON.stringify({ pergunta, historico: historico.slice(-8) })
+            });
+            const data = await resp.json();
+            removeTyping();
+            if(!resp.ok || data.erro){
+                addMessage('ai', '<p>'+esc(data.erro||'Ocorreu um erro ao consultar o Oráculo.')+'</p>');
+            } else {
+                addMessage('ai', renderMarkdown(data.resposta), data.meta && data.meta.consultas);
+                historico.push({role:'user', content:pergunta});
+                historico.push({role:'assistant', content:data.resposta});
+            }
+        }catch(e){
+            removeTyping();
+            addMessage('ai', '<p>Não foi possível conectar ao Oráculo. Verifique a conexão e tente novamente.</p>');
+        }finally{
+            busy=false; sendBtn.disabled=false; input.focus();
+        }
+    }
+
+    function autoresize(){ input.style.height='auto'; input.style.height=Math.min(input.scrollHeight,150)+'px'; }
+    input.addEventListener('input', autoresize);
+    input.addEventListener('keydown', e=>{
+        if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); ask(input.value); }
+    });
+    sendBtn.addEventListener('click', ()=>ask(input.value));
+    document.querySelectorAll('.orc-chip').forEach(ch=>{
+        ch.addEventListener('click', ()=>ask(ch.textContent.trim()));
+    });
+    {% if ia_disponivel %}setTimeout(()=>input.focus(), 200);{% endif %}
+})();
+</script>
+{% endblock %}

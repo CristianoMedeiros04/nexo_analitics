@@ -17,5 +17,6 @@ urlpatterns = [
     path('advogados/', views.advogados, name='advogados'),
     path('magistrados/', views.magistrados, name='magistrados'),
     path('lista/', views.lista, name='lista'),
+    path('oraculo/', views.oraculo, name='oraculo'),
     path('api/dashboard-data/', views.dashboard_data, name='dashboard_data'),
 ]

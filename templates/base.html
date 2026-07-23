@@ -285,8 +285,8 @@
                 </a>
             </div>
             <div class="snav-item">
-                <a href="#" onclick="return false;" data-title="Oráculo" class="snav-link" style="--accent:#f59e0b">
-                    <span class="material-icons-round">auto_awesome</span><span class="label">Oráculo</span><span class="snav-pill">BETA</span>
+                <a href="{% url 'core:oraculo' %}" data-title="Oráculo" class="snav-link {% if request.resolver_match.url_name == 'oraculo' %}active{% endif %}" style="--accent:#f59e0b">
+                    <span class="material-icons-round">auto_awesome</span><span class="label">Oráculo</span><span class="snav-pill">IA</span>
                 </a>
             </div>
 

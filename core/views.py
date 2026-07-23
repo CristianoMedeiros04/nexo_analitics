@@ -107,6 +107,15 @@ def magistrados(request):
 
 
 
+def oraculo(request):
+    """
+    Oráculo - assistente de IA conversacional com acesso ao banco de dados.
+    """
+    import os
+    ia_disponivel = bool(os.environ.get('DEEPSEEK_API_KEY') or os.environ.get('ANTHROPIC_API_KEY'))
+    return render(request, 'core/oraculo.html', {'ia_disponivel': ia_disponivel})
+
+
 def lista(request):
     """
     View do módulo Lista - Listagem de todos os processos em modo galeria.

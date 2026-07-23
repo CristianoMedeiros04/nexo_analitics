@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework import routers
-from .views import ProcessoViewSet, filter_options, dashboard_data_filtered, acordos_data, desfechos_data, distribuicao_data, duracao_data, revelias_data, tipos_acao_data, recursos_data, pedidos_data, pedidos_ia_data, ranking_exito, valores_data, advogados_lista, advogados_desfechos, advogados_duracao, advogados_deferimento, advogados_valores_medios, advogados_valores_totais, advogados_proporcao_ativos, magistrados_lista, magistrados_desfechos, magistrados_decisoes, magistrados_duracao, magistrados_deferimento, magistrados_valores_medios, magistrados_valores_totais, magistrados_proporcao_ativos
+from .views import ProcessoViewSet, filter_options, dashboard_data_filtered, acordos_data, desfechos_data, distribuicao_data, duracao_data, revelias_data, tipos_acao_data, recursos_data, pedidos_data, pedidos_ia_data, ranking_exito, valores_data, advogados_lista, advogados_desfechos, advogados_duracao, advogados_deferimento, advogados_valores_medios, advogados_valores_totais, advogados_proporcao_ativos, magistrados_lista, magistrados_desfechos, magistrados_decisoes, magistrados_duracao, magistrados_deferimento, magistrados_valores_medios, magistrados_valores_totais, magistrados_proporcao_ativos, oraculo_perguntar
 
 router = routers.DefaultRouter()
 router.register(r'processos', ProcessoViewSet, basename='processos')
@@ -37,4 +37,5 @@ urlpatterns = [
     path('magistrados/valores-medios/', magistrados_valores_medios, name='magistrados-valores-medios'),
     path('magistrados/valores-totais/', magistrados_valores_totais, name='magistrados-valores-totais'),
     path('magistrados/proporcao-ativos/', magistrados_proporcao_ativos, name='magistrados-proporcao-ativos'),
+    path('oraculo/perguntar/', oraculo_perguntar, name='oraculo-perguntar'),
 ]

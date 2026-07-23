@@ -3091,3 +3091,36 @@ def ranking_exito(request):
     top_volume = sorted(linhas, key=lambda x: -x['processos'])[:15]
 
     return Response({'top_taxa': top_taxa, 'top_volume': top_volume, 'tipo': tipo})
+
+
+@api_view(['POST'])
+def oraculo_perguntar(request):
+    """
+    Oráculo — assistente de IA com acesso ao banco de jurimetria.
+    Body: {"pergunta": str, "historico": [{"role","content"}, ...]}
+    Retorna: {"resposta": str, "meta": {...}} ou {"erro": str}.
+    """
+    from core.services.oraculo import Oraculo
+
+    pergunta = (request.data or {}).get('pergunta', '').strip()
+    historico = (request.data or {}).get('historico') or []
+    if not pergunta:
+        return Response({'erro': 'Pergunta vazia.'}, status=400)
+
+    try:
+        oraculo = Oraculo()
+    except RuntimeError as exc:
+        return Response(
+            {'erro': 'O Oráculo está indisponível: nenhuma chave de IA configurada no servidor. '
+                     f'({exc})'},
+            status=503,
+        )
+
+    try:
+        resposta, meta = oraculo.perguntar(pergunta, historico)
+    except Exception as exc:  # pragma: no cover - defensivo
+        return Response({'erro': f'Falha ao consultar o Oráculo: {str(exc)[:300]}'}, status=502)
+
+    if not resposta:
+        resposta = 'Não consegui elaborar uma resposta para essa pergunta. Pode reformular?'
+    return Response({'resposta': resposta, 'meta': meta})

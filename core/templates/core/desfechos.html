@@ -52,34 +52,49 @@
     
     .ranking-tab {
         padding: 8px 16px;
-        border: 1px solid #2b538f;
+        border: 1px solid #6366f1;
         border-radius: 20px;
         background: white;
-        color: #2b538f;
+        color: #6366f1;
         cursor: pointer;
         font-size: 13px;
         transition: all 0.3s;
     }
     
     .ranking-tab:hover {
-        background: #e8f4f8;
+        background: #eef2ff;
     }
     
     .ranking-tab.active {
-        background: #2b538f;
+        background: #6366f1;
         color: white;
     }
 </style>
 
 <div class="container-fluid mt-4">
-    <h4 style="color: #2b538f; margin-bottom: 20px;">Desfechos</h4>
-    
-    <!-- FAIXA 1: Volume de processos por tipo de desfecho -->
-    <div class="row">
-        <div class="col-12">
-            <div class="chart-card">
-                <h5>Volume de processos por tipo de desfecho <span style="color: #2b538f;">Total</span></h5>
-                <div class="chart-container" id="grafico-volume-desfechos"></div>
+    <div class="page-head">
+        <h1>Desfechos</h1>
+        <p>Como os processos terminam — distribuição, volume e decisões por instância.</p>
+    </div>
+
+    <!-- FAIXA 0: Distribuição (donut) + volume -->
+    <div class="row g-3">
+        <div class="col-lg-5">
+            <div class="chart-card" style="height:100%;">
+                <div class="chart-card-header">
+                    <h3 class="chart-card-title">Distribuição de desfechos</h3>
+                    <span class="chart-card-badge">Proporção</span>
+                </div>
+                <div id="donut-desfechos" style="height:420px;"></div>
+            </div>
+        </div>
+        <div class="col-lg-7">
+            <div class="chart-card" style="height:100%;">
+                <div class="chart-card-header">
+                    <h3 class="chart-card-title">Volume por tipo de desfecho</h3>
+                    <span class="chart-card-badge">Total</span>
+                </div>
+                <div class="chart-container" id="grafico-volume-desfechos" style="height:420px;"></div>
             </div>
         </div>
     </div>
@@ -88,7 +103,7 @@
     <div class="row">
         <div class="col-12">
             <div class="chart-card">
-                <h5>Ranking por tipo de desfecho <span style="color: #2b538f;">Total</span></h5>
+                <h5>Ranking por tipo de desfecho <span style="color: #6366f1;">Total</span></h5>
                 
                 <div class="ranking-header">
                     <!-- Dropdown para selecionar tipo de desfecho -->
@@ -121,7 +136,7 @@
     <div class="row">
         <div class="col-12">
             <div class="chart-card">
-                <h5>Decisões de processos por instâncias <span style="color: #2b538f;">Total</span></h5>
+                <h5>Decisões de processos por instâncias <span style="color: #6366f1;">Total</span></h5>
                 <div class="chart-container" id="grafico-decisoes-instancias"></div>
             </div>
         </div>
@@ -130,6 +145,29 @@
 
 <script src="{% static 'core/js/desfechos-charts.js' %}"></script>
 <script>
+    // Donut de distribuição de desfechos (ECharts, auto-tematizado)
+    var _donutDesf;
+    function criarDonutDesfechos(vd){
+        if(!vd || !vd.labels) return;
+        var el=document.getElementById('donut-desfechos'); if(!el) return;
+        _donutDesf = _donutDesf || echarts.init(el);
+        // pares label/valor, ordena desc, agrupa cauda em "Outros"
+        var pares=vd.labels.map(function(l,i){return {name:l, value:(vd.values||[])[i]||0};})
+                    .filter(function(p){return p.value>0;})
+                    .sort(function(a,b){return b.value-a.value;});
+        var top=pares.slice(0,8);
+        var resto=pares.slice(8).reduce(function(s,p){return s+p.value;},0);
+        if(resto>0) top.push({name:'Outros', value:resto});
+        _donutDesf.setOption({
+            tooltip:{trigger:'item', formatter:'{b}: {c} ({d}%)'},
+            legend:{type:'scroll', bottom:0, textStyle:{fontSize:11}},
+            series:[{type:'pie', radius:['50%','74%'], center:['50%','44%'],
+                avoidLabelOverlap:true, itemStyle:{borderColor:'#fff', borderWidth:3, borderRadius:4},
+                label:{show:false}, emphasis:{label:{show:true, fontSize:14, fontWeight:'bold', formatter:'{b}\n{d}%'}},
+                data:top}]
+        });
+    }
+
     // Função para carregar dados de desfechos
     function loadDesfechosData(filters = null) {
         let fetchPromise;
@@ -154,6 +192,7 @@
                 console.log('Dados de desfechos recebidos:', data);
                 
                 // Criar gráficos
+                criarDonutDesfechos(data.volume_desfechos);
                 criarGraficoVolumeDesfechos(data.volume_desfechos);
                 criarRankingDesfechos(data.ranking_desfechos);
                 criarGraficoDecisoesInstancias(data.decisoes_instancias);

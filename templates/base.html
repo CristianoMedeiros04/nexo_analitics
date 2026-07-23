@@ -1,922 +1,605 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-sidebar="expanded">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Nexo Estratégico - Sistema de Mentoria{% endblock %}</title>
-    
-    <!-- Bootstrap 5 CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Google Material Icons -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
-    <!-- Plotly.js para gráficos -->
-    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
-    
-    <!-- ECharts para mapas interativos -->
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
-    
-    <!-- Filter Sidebar CSS -->
+    <title>{% block title %}Nexo Analitics{% endblock %}</title>
+
+    <!-- Bootstrap 5 (grid/utils) -->
+    <link href="{% static 'core/vendor/bootstrap.min.css' %}" rel="stylesheet">
+
+    <!-- Ícones + tipografia (auto-hospedados, independentes de rede) -->
+    <link rel="stylesheet" href="{% static 'core/css/fonts.css' %}">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bibliotecas de gráfico -->
+    <script src="{% static 'core/vendor/plotly.min.js' %}"></script>
+    <script src="{% static 'core/vendor/echarts.min.js' %}"></script>
+
+    <!-- Filtro + tema de gráficos -->
     <link rel="stylesheet" href="{% static 'core/css/filter-sidebar.css' %}">
-    
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f5f7fa;
-            color: #333;
-        }
-        
-        /* Sidebar */
-        .sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            width: 240px;
-            background: linear-gradient(180deg, #2b538f 0%, #3d6ba8 100%);
-            color: white;
-            overflow-y: auto;
-            z-index: 1000;
-            box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-        }
-        
-        .sidebar-logo {
-            padding: 20px;
-            text-align: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .sidebar-logo h3 {
-            font-size: 20px;
-            font-weight: 500;
-            margin: 0;
-            color: white;
-        }
-        
-        .sidebar-logo small {
-            font-size: 12px;
-            opacity: 0.8;
-        }
-        
-        .sidebar-menu {
-            list-style: none;
-            padding: 10px 0;
-        }
-        
-        .sidebar-menu li {
-            margin: 5px 0;
-        }
-        
-        .sidebar-menu a {
-            display: flex;
-            align-items: center;
-            padding: 12px 20px;
-            color: rgba(255,255,255,0.9);
-            text-decoration: none;
-            transition: all 0.3s;
-        }
-        
-        .sidebar-menu a:hover,
-        .sidebar-menu a.active {
-            background: rgba(255,255,255,0.15);
-            color: white;
-        }
-        
-        .sidebar-menu .material-icons {
-            margin-right: 12px;
-            font-size: 20px;
-        }
-        
-        .sidebar-menu .menu-text {
-            font-size: 14px;
-        }
-        
-        .sidebar-menu .badge {
-            margin-left: auto;
-            font-size: 10px;
-        }
-        
-        /* Submenu */
-        .menu-item-with-submenu {
-            position: relative;
-        }
-        
-        .submenu-arrow {
-            margin-left: auto;
-            font-size: 18px;
-            transition: transform 0.3s;
-        }
-        
-        .menu-item-with-submenu.open .submenu-arrow {
-            transform: rotate(180deg);
-        }
-        
-        .submenu {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease;
-            background: rgba(0,0,0,0.2);
-        }
-        
-        .menu-item-with-submenu.open .submenu {
-            max-height: 200px;
-        }
-        
-        .submenu li a {
-            padding-left: 52px;
-            font-size: 13px;
-        }
-        
-        .submenu li a:hover {
-            background: rgba(255,255,255,0.1);
-        }
-        
-        /* Top Bar */
-        .topbar {
-            position: fixed;
-            top: 0;
-            left: 240px;
-            right: 0;
-            height: 60px;
-            background: #2b538f;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 30px;
-            z-index: 999;
-        }
-        
-        .topbar-left {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        
-        .topbar-tabs {
-            display: flex;
-            gap: 10px;
-        }
-        
-        .topbar-tab {
-            padding: 8px 16px;
-            background: transparent;
-            border: none;
-            color: #666;
-            font-size: 14px;
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transition: all 0.3s;
-        }
-        
-        .topbar-tab.active {
-            color: #2b538f;
-            border-bottom-color: #2b538f;
-        }
-        
-        .topbar-right {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-        
-        .topbar-filter {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 6px 12px;
-            background: rgba(255,255,255,0.15);
-            border-radius: 4px;
-            font-size: 13px;
-            color: white;
-        }
-        
-        .topbar-stats {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            color: white;
-        }
-        
-        .topbar-stats .material-icons {
-            font-size: 18px;
-            color: white;
-        }
-        
-        .topbar-user {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-        }
-        
-        .topbar-user .avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: #2b538f;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-        }
-        
-        /* Main Content */
-        .main-content {
-            margin-left: 240px;
-            margin-top: 60px;
-            padding: 30px;
-            min-height: calc(100vh - 60px);
-        }
-        
-        /* Cards */
-        .stat-card {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            transition: all 0.3s;
-        }
-        
-        .stat-card:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-        
-        .stat-card-value {
-            font-size: 28px;
-            font-weight: 500;
-            color: #2b538f;
-            margin: 10px 0;
-        }
-        
-        .stat-card-label {
-            font-size: 13px;
-            color: #666;
-            margin: 0;
-        }
-        
-        /* Chart Cards */
-        .chart-card {
-            background: white;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-        }
-        
-        .chart-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        
-        .chart-card-title {
-            font-size: 16px;
-            font-weight: 500;
-            color: #333;
-            margin: 0;
-        }
-        
-        .chart-card-badge {
-            padding: 4px 12px;
-            background: #e3f2fd;
-            color: #2b538f;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-        
-        .chart-card-menu {
-            color: #999;
-            cursor: pointer;
-        }
-        
-        /* Loading */
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #999;
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            
-            .topbar,
-            .main-content {
-                margin-left: 0;
-                left: 0;
-            }
-        }
+    /* ====================== DESIGN TOKENS ====================== */
+    :root {
+        --brand-1:#6366f1; --brand-2:#8b5cf6; --brand-3:#0ea5e9;
+        --primary:#6366f1; --primary-600:#4f46e5; --primary-050:#eef2ff;
+        --ink:#0f172a; --ink-2:#334155; --muted:#64748b; --muted-2:#94a3b8;
+        --line:#eef1f6; --line-2:#e2e8f0;
+        --surface:#ffffff; --surface-2:#f8fafc; --canvas:#f4f6fb;
+        --ok:#10b981; --warn:#f59e0b; --danger:#f43f5e; --info:#0ea5e9;
+        --radius:16px; --radius-sm:12px; --radius-xs:9px;
+        --shadow-sm:0 1px 2px rgba(15,23,42,.04),0 1px 3px rgba(15,23,42,.06);
+        --shadow:0 4px 14px rgba(15,23,42,.06),0 2px 4px rgba(15,23,42,.04);
+        --shadow-lg:0 18px 40px -12px rgba(15,23,42,.18);
+        --sidebar-w:250px; --sidebar-w-collapsed:78px; --topbar-h:66px;
+        --ease:cubic-bezier(.22,.61,.36,1);
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html,body { height:100%; }
+    body {
+        font-family:'Inter',system-ui,sans-serif;
+        background:var(--canvas); color:var(--ink);
+        -webkit-font-smoothing:antialiased; letter-spacing:-.01em;
+    }
+    a { text-decoration:none; color:inherit; }
+    ::selection { background:var(--primary-050); }
+
+    /* ======================= SIDEBAR ========================== */
+    .sidebar {
+        position:fixed; inset:0 auto 0 0; width:var(--sidebar-w);
+        background:var(--surface); border-right:1px solid var(--line);
+        display:flex; flex-direction:column; z-index:1000;
+        transition:width .32s var(--ease);
+    }
+    html[data-sidebar="collapsed"] .sidebar { width:var(--sidebar-w-collapsed); }
+
+    /* Marca */
+    .brand {
+        display:flex; align-items:center; gap:12px;
+        height:var(--topbar-h); padding:0 18px; flex:0 0 auto;
+        border-bottom:1px solid var(--line);
+    }
+    .brand-logo { flex:0 0 auto; width:38px; height:38px; }
+    .brand-text { display:flex; flex-direction:column; line-height:1.05; overflow:hidden; white-space:nowrap; }
+    .brand-text b { font-size:16px; font-weight:800; letter-spacing:-.02em; color:var(--ink); }
+    .brand-text span { font-size:10.5px; font-weight:600; color:var(--muted-2); letter-spacing:.14em; text-transform:uppercase; }
+    html[data-sidebar="collapsed"] .brand { padding:0; justify-content:center; }
+    html[data-sidebar="collapsed"] .brand-text { display:none; }
+
+    /* Navegação */
+    .snav { flex:1 1 auto; padding:12px 12px 8px; overflow:hidden; }
+    .snav:hover { overflow-y:auto; }
+    .snav::-webkit-scrollbar { width:0; height:0; }
+    .snav { scrollbar-width:none; }
+    .snav-label {
+        font-size:10px; font-weight:700; letter-spacing:.13em; text-transform:uppercase;
+        color:var(--muted-2); padding:12px 12px 6px; white-space:nowrap;
+    }
+    html[data-sidebar="collapsed"] .snav-label { opacity:0; height:8px; padding:0; }
+
+    .snav-item { position:relative; }
+    .snav-link {
+        --accent:var(--primary);
+        display:flex; align-items:center; gap:13px;
+        padding:9.5px 12px; margin:2px 0; border-radius:var(--radius-xs);
+        color:var(--ink-2); font-size:13.5px; font-weight:500;
+        position:relative; transition:background .18s var(--ease), color .18s var(--ease);
+    }
+    .snav-link .material-icons-round {
+        font-size:21px; color:var(--accent); flex:0 0 auto;
+        transition:transform .2s var(--ease);
+    }
+    .snav-link .label { white-space:nowrap; overflow:hidden; }
+    .snav-link:hover { background:var(--surface-2); color:var(--ink); }
+    .snav-link:hover .material-icons-round { transform:translateY(-1px); }
+    .snav-link.active {
+        background:
+            linear-gradient(0deg, color-mix(in srgb, var(--accent) 9%, white), color-mix(in srgb, var(--accent) 9%, white));
+        color:var(--ink); font-weight:600;
+    }
+    .snav-link.active::before {
+        content:""; position:absolute; left:-12px; top:50%; transform:translateY(-50%);
+        width:4px; height:22px; border-radius:0 4px 4px 0; background:var(--accent);
+    }
+    .snav-pill {
+        margin-left:auto; font-size:9px; font-weight:800; letter-spacing:.06em;
+        padding:2px 7px; border-radius:20px; background:#fff7ed; color:#c2620a; border:1px solid #fed7aa;
+    }
+    html[data-sidebar="collapsed"] .snav-link { justify-content:center; padding:11px 0; }
+    html[data-sidebar="collapsed"] .snav-link .label,
+    html[data-sidebar="collapsed"] .snav-pill,
+    html[data-sidebar="collapsed"] .sub-arrow { display:none; }
+    html[data-sidebar="collapsed"] .snav-link.active::before { left:0; }
+
+    /* Tooltip quando colapsado */
+    html[data-sidebar="collapsed"] .snav-link::after {
+        content:attr(data-title); position:absolute; left:calc(100% + 14px); top:50%;
+        transform:translateY(-50%) scale(.96); transform-origin:left center;
+        background:var(--ink); color:#fff; font-size:12px; font-weight:600; white-space:nowrap;
+        padding:6px 10px; border-radius:8px; box-shadow:var(--shadow-lg);
+        opacity:0; pointer-events:none; transition:opacity .16s, transform .16s; z-index:1200;
+    }
+    html[data-sidebar="collapsed"] .snav-link:hover::after { opacity:1; transform:translateY(-50%) scale(1); }
+
+    /* Submenu (Comparar) */
+    .submenu { max-height:0; overflow:hidden; transition:max-height .3s var(--ease); }
+    .snav-item.open > .submenu { max-height:140px; }
+    .submenu .snav-link { padding-left:44px; font-size:13px; }
+    .sub-arrow { margin-left:auto; font-size:18px !important; color:var(--muted-2) !important; transition:transform .25s var(--ease); }
+    .snav-item.open .sub-arrow { transform:rotate(180deg); }
+    html[data-sidebar="collapsed"] .snav-item.open > .submenu { max-height:0; }
+
+    /* Rodapé da sidebar: botão colapsar */
+    .sidebar-foot { flex:0 0 auto; padding:10px 12px; border-top:1px solid var(--line); }
+    .collapse-btn {
+        width:100%; display:flex; align-items:center; gap:12px; justify-content:flex-start;
+        background:var(--surface-2); border:1px solid var(--line); color:var(--muted);
+        padding:9px 12px; border-radius:var(--radius-xs); cursor:pointer; font-size:12.5px; font-weight:600;
+        transition:background .18s, color .18s;
+    }
+    .collapse-btn:hover { background:var(--primary-050); color:var(--primary-600); }
+    .collapse-btn .material-icons-round { font-size:20px; transition:transform .3s var(--ease); }
+    html[data-sidebar="collapsed"] .collapse-btn { justify-content:center; padding:9px 0; }
+    html[data-sidebar="collapsed"] .collapse-btn .label { display:none; }
+    html[data-sidebar="collapsed"] .collapse-btn .material-icons-round { transform:rotate(180deg); }
+
+    /* ======================== TOPBAR ========================== */
+    .topbar {
+        position:fixed; top:0; left:var(--sidebar-w); right:0; height:var(--topbar-h);
+        background:rgba(255,255,255,.82); backdrop-filter:saturate(180%) blur(12px);
+        border-bottom:1px solid var(--line); z-index:900;
+        display:flex; align-items:center; justify-content:space-between; padding:0 26px;
+        transition:left .32s var(--ease);
+    }
+    html[data-sidebar="collapsed"] .topbar { left:var(--sidebar-w-collapsed); }
+    .topbar-title { display:flex; flex-direction:column; line-height:1.1; }
+    .topbar-title b { font-size:15.5px; font-weight:700; letter-spacing:-.02em; }
+    .topbar-title span { font-size:11.5px; color:var(--muted); font-weight:500; }
+    .topbar-right { display:flex; align-items:center; gap:14px; }
+
+    .chip {
+        display:flex; align-items:center; gap:8px; height:38px; padding:0 14px;
+        border-radius:11px; font-size:13px; font-weight:600; cursor:pointer;
+        border:1px solid var(--line-2); background:var(--surface); color:var(--ink-2);
+        transition:all .18s var(--ease); position:relative;
+    }
+    .chip .material-icons-round { font-size:18px; }
+    .chip-filter { color:#fff; background:linear-gradient(135deg,var(--brand-1),var(--brand-2)); border:none; box-shadow:0 6px 16px -6px rgba(99,102,241,.6); }
+    .chip-filter:hover { filter:brightness(1.05); transform:translateY(-1px); }
+    .chip-stat { cursor:default; }
+    .chip-stat b { color:var(--ink); }
+    .chip-stat .material-icons-round { color:var(--primary); }
+    .filter-count-badge {
+        position:absolute; top:-7px; right:-7px; min-width:19px; height:19px; padding:0 5px;
+        background:var(--danger); color:#fff; border-radius:20px; font-size:10.5px; font-weight:800;
+        display:flex; align-items:center; justify-content:center; border:2px solid #fff;
+    }
+    .icon-btn {
+        width:38px; height:38px; border-radius:11px; border:1px solid var(--line-2); background:var(--surface);
+        display:flex; align-items:center; justify-content:center; color:var(--muted); cursor:pointer; transition:all .18s;
+    }
+    .icon-btn:hover { color:var(--primary); border-color:var(--primary-050); background:var(--primary-050); }
+    .avatar {
+        width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+        background:linear-gradient(135deg,var(--brand-1),var(--brand-3)); color:#fff; font-weight:700; font-size:14px; cursor:pointer;
+    }
+
+    /* ===================== MAIN CONTENT ======================= */
+    .main-content {
+        margin-left:var(--sidebar-w); margin-top:var(--topbar-h);
+        padding:26px 30px 40px; min-height:calc(100vh - var(--topbar-h));
+        transition:margin-left .32s var(--ease);
+    }
+    html[data-sidebar="collapsed"] .main-content { margin-left:var(--sidebar-w-collapsed); }
+
+    .page-head { margin-bottom:20px; }
+    .page-head h1 { font-size:23px; font-weight:800; letter-spacing:-.03em; }
+    .page-head p { color:var(--muted); font-size:13.5px; margin-top:2px; }
+
+    /* ======================== CARDS =========================== */
+    .stat-card {
+        background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+        padding:18px 20px; box-shadow:var(--shadow-sm); transition:transform .2s var(--ease), box-shadow .2s var(--ease);
+        position:relative; overflow:hidden;
+    }
+    .stat-card::after {
+        content:""; position:absolute; inset:0 auto 0 0; width:3px;
+        background:linear-gradient(180deg,var(--brand-1),var(--brand-2)); opacity:.9;
+    }
+    .stat-card:hover { transform:translateY(-2px); box-shadow:var(--shadow); }
+    .stat-card-value { font-size:27px; font-weight:800; letter-spacing:-.03em; color:var(--ink); margin:8px 0 2px; }
+    .stat-card-label { font-size:12.5px; color:var(--muted); font-weight:500; margin:0; }
+
+    .chart-card {
+        background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+        padding:20px 22px; box-shadow:var(--shadow-sm); margin-bottom:22px; transition:box-shadow .2s var(--ease);
+    }
+    .chart-card:hover { box-shadow:var(--shadow); }
+    .chart-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; gap:12px; }
+    .chart-card-title { font-size:15.5px; font-weight:700; letter-spacing:-.02em; color:var(--ink); margin:0; display:flex; align-items:center; gap:9px; }
+    .chart-card-title::before {
+        content:""; width:8px; height:8px; border-radius:3px;
+        background:linear-gradient(135deg,var(--brand-1),var(--brand-2)); flex:0 0 auto;
+    }
+    .chart-card-badge {
+        padding:5px 12px; background:var(--primary-050); color:var(--primary-600);
+        border-radius:20px; font-size:11.5px; font-weight:700;
+    }
+    .chart-card-menu { color:var(--muted-2); cursor:pointer; }
+    .loading { text-align:center; padding:48px; color:var(--muted-2); font-size:13.5px; }
+
+    /* Realces globais para conteúdo legado dos módulos */
+    .card { border:1px solid var(--line) !important; border-radius:var(--radius) !important; box-shadow:var(--shadow-sm) !important; }
+    .btn-primary { background:var(--primary) !important; border-color:var(--primary) !important; }
+    .text-primary { color:var(--primary) !important; }
+    .table > :not(caption) > * > * { border-color:var(--line) !important; }
+
+    /* ===================== RESPONSIVO ========================= */
+    .mobile-toggle { display:none; }
+    @media (max-width: 900px) {
+        .sidebar { transform:translateX(-100%); transition:transform .3s var(--ease); box-shadow:var(--shadow-lg); }
+        html[data-sidebar="mobile-open"] .sidebar { transform:translateX(0); }
+        .topbar, .main-content { left:0 !important; margin-left:0 !important; }
+        .mobile-toggle { display:flex; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { transition:none !important; } }
     </style>
-    
+
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-logo">
-            <span class="material-icons" style="font-size: 32px;">gavel</span>
-            <h3>Nexo Estratégico</h3>
-            <small>Mentoria</small>
+    <!-- ===================== SIDEBAR ===================== -->
+    <aside class="sidebar">
+        <div class="brand">
+            <svg class="brand-logo" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Nexo Analitics">
+                <defs>
+                    <linearGradient id="nx" x1="6" y1="6" x2="42" y2="42" gradientUnits="userSpaceOnUse">
+                        <stop stop-color="#6366f1"/><stop offset=".55" stop-color="#8b5cf6"/><stop offset="1" stop-color="#0ea5e9"/>
+                    </linearGradient>
+                </defs>
+                <rect x="2" y="2" width="44" height="44" rx="13" fill="url(#nx)"/>
+                <path d="M14 33V15l20 18V15" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" opacity=".96"/>
+                <circle cx="14" cy="15" r="3.4" fill="#fff"/>
+                <circle cx="34" cy="33" r="3.4" fill="#fff"/>
+            </svg>
+            <div class="brand-text">
+                <b>Nexo Analitics</b>
+                <span>Jurimetria</span>
+            </div>
         </div>
-        
-        <ul class="sidebar-menu">
-            <li>
-                <a href="/" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">
-                    <span class="material-icons">home</span>
-                    <span class="menu-text">Início</span>
-                </a>
-            </li>
-            <li>
-                <a href="#" onclick="return false;">
-                    <span class="material-icons">assistant</span>
-                    <span class="menu-text">Oráculo</span>
-                    <span class="badge bg-warning">BETA</span>
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'core:acordos' %}" class="{% if request.resolver_match.url_name == 'acordos' %}active{% endif %}">
-                    <span class="material-icons">handshake</span>
-                    <span class="menu-text">Acordos</span>
-                </a>
-            </li>
 
-            <li>
-                <a href="{% url 'core:desfechos' %}" class="{% if request.resolver_match.url_name == 'desfechos' %}active{% endif %}">
-                    <span class="material-icons">gavel</span>
-                    <span class="menu-text">Desfechos</span>
+        <nav class="snav">
+            <div class="snav-label">Painel</div>
+            <div class="snav-item">
+                <a href="/" data-title="Início" class="snav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" style="--accent:#6366f1">
+                    <span class="material-icons-round">dashboard</span><span class="label">Início</span>
                 </a>
-            </li>
-            <li>
-                <a href="{% url 'core:distribuicao' %}">
-                    <span class="material-icons">pie_chart</span>
-                    <span class="menu-text">Distribuição</span>
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'core:duracao' %}">
-                    <span class="material-icons">schedule</span>
-                    <span class="menu-text">Duração</span>
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'core:revelias' %}">
-                    <span class="material-icons">trending_up</span>
-                    <span class="menu-text">Revelias</span>
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'core:tipos_acao' %}">
-                    <span class="material-icons">category</span>
-                    <span class="menu-text">Tipos de ação</span>
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'core:recursos' %}">
-                    <span class="material-icons">account_balance</span>
-                    <span class="menu-text">Recursos</span>
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'core:pedidos' %}">
-                    <span class="material-icons">request_page</span>
-                    <span class="menu-text">Pedidos</span>
-                </a>
-            </li>
-            <li>
-                <a href="{% url 'core:valores' %}">
-                    <span class="material-icons">attach_money</span>
-                    <span class="menu-text">Valores</span>
-                </a>
-            </li>
-            <li class="menu-item-with-submenu">
-                <a href="#" onclick="toggleSubmenu(event, this)">
-                    <span class="material-icons">compare</span>
-                    <span class="menu-text">Comparar</span>
-                    <span class="material-icons submenu-arrow">expand_more</span>
-                </a>
-                <ul class="submenu">
-                    <li>
-                        <a href="{% url 'core:advogados' %}">
-                            <span class="material-icons">people</span>
-                            <span class="menu-text">Advogados</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{% url 'core:magistrados' %}">
-                            <span class="material-icons">business</span>
-                            <span class="menu-text">Magistrados</span>
-                        </a>
-                    </li>
-                </ul>
-            </li>
-            <li>
-                <a href="{% url 'core:lista' %}">
-                    <span class="material-icons">list</span>
-                    <span class="menu-text">Lista</span>
-                </a>
-            </li>
-        </ul>
-    </div>
-    
-    <!-- Top Bar -->
-    <div class="topbar">
-        <div class="topbar-left">
-            <h5 style="margin: 0; color: white; font-weight: 500;">Braz, Godoi e Medeiros</h5>
-        </div>
-        
-        <div class="topbar-right">
-            <div class="topbar-filter" id="btn-open-filter" style="cursor: pointer;">
-                <span class="material-icons" style="font-size: 16px;">filter_list</span>
-                <span>Filtrar</span>
             </div>
-            
-            <div class="topbar-stats">
-                <span class="material-icons">description</span>
-                <strong id="topbar-total">0</strong>
-                <span>Trabalhista</span>
+            <div class="snav-item">
+                <a href="#" onclick="return false;" data-title="Oráculo" class="snav-link" style="--accent:#f59e0b">
+                    <span class="material-icons-round">auto_awesome</span><span class="label">Oráculo</span><span class="snav-pill">BETA</span>
+                </a>
             </div>
-            
-            <span class="material-icons" style="cursor: pointer;">notifications</span>
-            
-            <div class="topbar-user">
-                <div class="avatar">U</div>
+
+            <div class="snav-label">Análises</div>
+            <div class="snav-item">
+                <a href="{% url 'core:acordos' %}" data-title="Acordos" class="snav-link {% if request.resolver_match.url_name == 'acordos' %}active{% endif %}" style="--accent:#10b981">
+                    <span class="material-icons-round">handshake</span><span class="label">Acordos</span>
+                </a>
             </div>
-        </div>
-    </div>
-    
-    <!-- Main Content -->
-    <div class="main-content">
-        {% block content %}{% endblock %}
-    </div>
-    
-    <!-- Filter Sidebar Overlay -->
-    <div class="filter-sidebar-overlay" id="filter-overlay"></div>
-    
-    <!-- Filter Sidebar -->
-    <div class="filter-sidebar" id="filter-sidebar">
-        <!-- Header -->
-        <div class="filter-sidebar-header">
-            <h4>Filtros</h4>
-            <button class="filter-sidebar-close" id="btn-close-filter">
-                <span class="material-icons">close</span>
+            <div class="snav-item">
+                <a href="{% url 'core:desfechos' %}" data-title="Desfechos" class="snav-link {% if request.resolver_match.url_name == 'desfechos' %}active{% endif %}" style="--accent:#8b5cf6">
+                    <span class="material-icons-round">gavel</span><span class="label">Desfechos</span>
+                </a>
+            </div>
+            <div class="snav-item">
+                <a href="{% url 'core:distribuicao' %}" data-title="Distribuição" class="snav-link {% if request.resolver_match.url_name == 'distribuicao' %}active{% endif %}" style="--accent:#0ea5e9">
+                    <span class="material-icons-round">donut_large</span><span class="label">Distribuição</span>
+                </a>
+            </div>
+            <div class="snav-item">
+                <a href="{% url 'core:duracao' %}" data-title="Duração" class="snav-link {% if request.resolver_match.url_name == 'duracao' %}active{% endif %}" style="--accent:#06b6d4">
+                    <span class="material-icons-round">schedule</span><span class="label">Duração</span>
+                </a>
+            </div>
+            <div class="snav-item">
+                <a href="{% url 'core:revelias' %}" data-title="Revelias" class="snav-link {% if request.resolver_match.url_name == 'revelias' %}active{% endif %}" style="--accent:#f43f5e">
+                    <span class="material-icons-round">flaky</span><span class="label">Revelias</span>
+                </a>
+            </div>
+            <div class="snav-item">
+                <a href="{% url 'core:tipos_acao' %}" data-title="Tipos de ação" class="snav-link {% if request.resolver_match.url_name == 'tipos_acao' %}active{% endif %}" style="--accent:#d946ef">
+                    <span class="material-icons-round">category</span><span class="label">Tipos de ação</span>
+                </a>
+            </div>
+            <div class="snav-item">
+                <a href="{% url 'core:recursos' %}" data-title="Recursos" class="snav-link {% if request.resolver_match.url_name == 'recursos' %}active{% endif %}" style="--accent:#3b82f6">
+                    <span class="material-icons-round">account_balance</span><span class="label">Recursos</span>
+                </a>
+            </div>
+            <div class="snav-item">
+                <a href="{% url 'core:pedidos' %}" data-title="Pedidos" class="snav-link {% if request.resolver_match.url_name == 'pedidos' %}active{% endif %}" style="--accent:#14b8a6">
+                    <span class="material-icons-round">request_quote</span><span class="label">Pedidos</span>
+                </a>
+            </div>
+            <div class="snav-item">
+                <a href="{% url 'core:valores' %}" data-title="Valores" class="snav-link {% if request.resolver_match.url_name == 'valores' %}active{% endif %}" style="--accent:#22c55e">
+                    <span class="material-icons-round">payments</span><span class="label">Valores</span>
+                </a>
+            </div>
+
+            <div class="snav-label">Comparativos</div>
+            <div class="snav-item" id="cmp-item">
+                <a href="#" data-title="Comparar" class="snav-link" style="--accent:#f97316" onclick="toggleSubmenu(event,this)">
+                    <span class="material-icons-round">insights</span><span class="label">Comparar</span>
+                    <span class="material-icons-round sub-arrow">expand_more</span>
+                </a>
+                <div class="submenu">
+                    <a href="{% url 'core:advogados' %}" data-title="Advogados" class="snav-link {% if request.resolver_match.url_name == 'advogados' %}active{% endif %}" style="--accent:#f97316">
+                        <span class="material-icons-round">badge</span><span class="label">Advogados</span>
+                    </a>
+                    <a href="{% url 'core:magistrados' %}" data-title="Magistrados" class="snav-link {% if request.resolver_match.url_name == 'magistrados' %}active{% endif %}" style="--accent:#f97316">
+                        <span class="material-icons-round">balance</span><span class="label">Magistrados</span>
+                    </a>
+                </div>
+            </div>
+            <div class="snav-item">
+                <a href="{% url 'core:lista' %}" data-title="Lista" class="snav-link {% if request.resolver_match.url_name == 'lista' %}active{% endif %}" style="--accent:#64748b">
+                    <span class="material-icons-round">table_rows</span><span class="label">Lista</span>
+                </a>
+            </div>
+        </nav>
+
+        <div class="sidebar-foot">
+            <button class="collapse-btn" id="btn-collapse" type="button">
+                <span class="material-icons-round">chevron_left</span>
+                <span class="label">Recolher</span>
             </button>
         </div>
-        
-        <!-- Body -->
+    </aside>
+
+    <!-- ===================== TOPBAR ===================== -->
+    <header class="topbar">
+        <div style="display:flex; align-items:center; gap:14px;">
+            <button class="icon-btn mobile-toggle" id="btn-mobile" type="button"><span class="material-icons-round">menu</span></button>
+            <div class="topbar-title">
+                <b>{% block page_title %}Painel{% endblock %}</b>
+                <span>Braz, Godoi e Medeiros · Jurimetria trabalhista</span>
+            </div>
+        </div>
+
+        <div class="topbar-right">
+            <div class="chip chip-filter" id="btn-open-filter">
+                <span class="material-icons-round">tune</span><span>Filtrar</span>
+            </div>
+            <div class="chip chip-stat">
+                <span class="material-icons-round">folder_open</span>
+                <b id="topbar-total">0</b><span style="color:var(--muted); font-weight:500;">processos</span>
+            </div>
+            <button class="icon-btn" type="button"><span class="material-icons-round">notifications_none</span></button>
+            <div class="avatar">N</div>
+        </div>
+    </header>
+
+    <!-- ===================== CONTEÚDO ===================== -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- ===================== FILTRO ===================== -->
+    <div class="filter-sidebar-overlay" id="filter-overlay"></div>
+    <div class="filter-sidebar" id="filter-sidebar">
+        <div class="filter-sidebar-header">
+            <h4>Filtros</h4>
+            <button class="filter-sidebar-close" id="btn-close-filter"><span class="material-icons-round">close</span></button>
+        </div>
         <div class="filter-sidebar-body">
-            <!-- Seção: Localização -->
             <div class="filter-section">
                 <div class="filter-section-title">Localização</div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">UFs</label>
-                    <div class="filter-search-list">
-                        <span class="material-icons filter-search-icon">search</span>
+                <div class="filter-group"><label class="filter-label">UFs</label>
+                    <div class="filter-search-list"><span class="material-icons-round filter-search-icon">search</span>
                         <input type="text" class="filter-search-input" id="search-ufs" placeholder="Pesquisar UFs...">
-                        <div class="filter-list" id="list-ufs"></div>
-                    </div>
-                </div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Comarcas</label>
-                    <div class="filter-search-list">
-                        <span class="material-icons filter-search-icon">search</span>
+                        <div class="filter-list" id="list-ufs"></div></div></div>
+                <div class="filter-group"><label class="filter-label">Comarcas</label>
+                    <div class="filter-search-list"><span class="material-icons-round filter-search-icon">search</span>
                         <input type="text" class="filter-search-input" id="search-comarcas" placeholder="Pesquisar comarcas...">
-                        <div class="filter-list" id="list-comarcas"></div>
-                    </div>
-                </div>
+                        <div class="filter-list" id="list-comarcas"></div></div></div>
             </div>
-            
-            <!-- Seção: Órgãos e Tribunais -->
             <div class="filter-section">
                 <div class="filter-section-title">Órgãos e Tribunais</div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Órgão de Origem</label>
-                    <div class="filter-search-list">
-                        <span class="material-icons filter-search-icon">search</span>
+                <div class="filter-group"><label class="filter-label">Órgão de Origem</label>
+                    <div class="filter-search-list"><span class="material-icons-round filter-search-icon">search</span>
                         <input type="text" class="filter-search-input" id="search-orgao-origem" placeholder="Pesquisar...">
-                        <div class="filter-list" id="list-orgao-origem"></div>
-                    </div>
-                </div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Órgão Julgador</label>
-                    <div class="filter-search-list">
-                        <span class="material-icons filter-search-icon">search</span>
+                        <div class="filter-list" id="list-orgao-origem"></div></div></div>
+                <div class="filter-group"><label class="filter-label">Órgão Julgador</label>
+                    <div class="filter-search-list"><span class="material-icons-round filter-search-icon">search</span>
                         <input type="text" class="filter-search-input" id="search-orgao-julgador" placeholder="Pesquisar...">
-                        <div class="filter-list" id="list-orgao-julgador"></div>
-                    </div>
-                </div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Tribunais</label>
-                    <div class="filter-search-list">
-                        <span class="material-icons filter-search-icon">search</span>
+                        <div class="filter-list" id="list-orgao-julgador"></div></div></div>
+                <div class="filter-group"><label class="filter-label">Tribunais</label>
+                    <div class="filter-search-list"><span class="material-icons-round filter-search-icon">search</span>
                         <input type="text" class="filter-search-input" id="search-tribunais" placeholder="Pesquisar tribunais...">
-                        <div class="filter-list" id="list-tribunais"></div>
-                    </div>
-                </div>
+                        <div class="filter-list" id="list-tribunais"></div></div></div>
             </div>
-            
-            <!-- Seção: Partes e Identificação -->
             <div class="filter-section">
                 <div class="filter-section-title">Partes e Identificação</div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Partes</label>
-                    <div class="filter-search-list">
-                        <span class="material-icons filter-search-icon">search</span>
+                <div class="filter-group"><label class="filter-label">Partes</label>
+                    <div class="filter-search-list"><span class="material-icons-round filter-search-icon">search</span>
                         <input type="text" class="filter-search-input" id="search-partes" placeholder="Pesquisar partes...">
-                        <div class="filter-list" id="list-partes"></div>
-                    </div>
-                </div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">CNPJ</label>
-                    <div class="filter-search-list">
-                        <span class="material-icons filter-search-icon">search</span>
+                        <div class="filter-list" id="list-partes"></div></div></div>
+                <div class="filter-group"><label class="filter-label">CNPJ</label>
+                    <div class="filter-search-list"><span class="material-icons-round filter-search-icon">search</span>
                         <input type="text" class="filter-search-input" id="search-cnpj" placeholder="Pesquisar CNPJ...">
-                        <div class="filter-list" id="list-cnpj"></div>
-                    </div>
-                </div>
+                        <div class="filter-list" id="list-cnpj"></div></div></div>
             </div>
-            
-            <!-- Seção: Profissionais -->
             <div class="filter-section">
                 <div class="filter-section-title">Profissionais</div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Advogados</label>
-                    <div class="filter-search-list">
-                        <span class="material-icons filter-search-icon">search</span>
+                <div class="filter-group"><label class="filter-label">Advogados</label>
+                    <div class="filter-search-list"><span class="material-icons-round filter-search-icon">search</span>
                         <input type="text" class="filter-search-input" id="search-advogados" placeholder="Pesquisar advogados...">
-                        <div class="filter-list" id="list-advogados"></div>
-                    </div>
-                </div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Magistrados</label>
-                    <div class="filter-search-list">
-                        <span class="material-icons filter-search-icon">search</span>
+                        <div class="filter-list" id="list-advogados"></div></div></div>
+                <div class="filter-group"><label class="filter-label">Magistrados</label>
+                    <div class="filter-search-list"><span class="material-icons-round filter-search-icon">search</span>
                         <input type="text" class="filter-search-input" id="search-magistrados" placeholder="Pesquisar magistrados...">
-                        <div class="filter-list" id="list-magistrados"></div>
-                    </div>
-                </div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Tipo de Cargos</label>
-                    <div class="filter-search-list">
-                        <span class="material-icons filter-search-icon">search</span>
+                        <div class="filter-list" id="list-magistrados"></div></div></div>
+                <div class="filter-group"><label class="filter-label">Tipo de Cargos</label>
+                    <div class="filter-search-list"><span class="material-icons-round filter-search-icon">search</span>
                         <input type="text" class="filter-search-input" id="search-tipo-cargos" placeholder="Pesquisar...">
-                        <div class="filter-list" id="list-tipo-cargos"></div>
-                    </div>
-                </div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Cargos</label>
-                    <div class="filter-search-list">
-                        <span class="material-icons filter-search-icon">search</span>
-                        <input type="text" class="filter-search-input" id="search-cargos" placeholder="Pesquisar cargos...">
-                        <div class="filter-list" id="list-cargos"></div>
-                    </div>
-                </div>
+                        <div class="filter-list" id="list-tipo-cargos"></div></div></div>
             </div>
-            
-            <!-- Seção: Datas e Período -->
             <div class="filter-section">
-                <div class="filter-section-title">Datas e Período</div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Tipo de Data</label>
+                <div class="filter-section-title">Período</div>
+                <div class="filter-group"><label class="filter-label">Tipo de Data</label>
                     <select class="filter-select" id="filter-tipo-data">
                         <option value="">Selecione...</option>
                         <option value="data_acordo">Data de acordo</option>
                         <option value="data_arquivamento">Data de arquivamento</option>
-                        <option value="data_bloqueio">Data de bloqueio</option>
-                        <option value="data_condenacao">Data de condenação</option>
                         <option value="data_distribuicao">Data de distribuição</option>
-                        <option value="data_revelia">Data de revelia</option>
-                        <option value="data_liquidacao">Data de liquidação</option>
-                        <option value="data_pedido_substituicao">Data do pedido de substituição</option>
-                        <option value="data_apresentacao_deposito">Data de apresentação do depósito</option>
-                        <option value="data_apresentacao_apolice">Data de apresentação da apólice</option>
+                        <option value="data_sentenca">Data da sentença</option>
                         <option value="data_transito_julgado">Data de trânsito em julgado</option>
-                    </select>
-                </div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Período</label>
+                    </select></div>
+                <div class="filter-group"><label class="filter-label">Período</label>
                     <div class="filter-range">
                         <input type="date" class="filter-input" id="filter-data-inicio">
                         <span>até</span>
-                        <input type="date" class="filter-input" id="filter-data-fim">
-                    </div>
-                </div>
+                        <input type="date" class="filter-input" id="filter-data-fim"></div></div>
             </div>
-            
-            <!-- Seção: Status e Fase -->
             <div class="filter-section">
                 <div class="filter-section-title">Status e Fase</div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Status do Processo</label>
+                <div class="filter-group"><label class="filter-label">Status do Processo</label>
                     <div class="filter-checkbox-group">
-                        <div class="filter-checkbox-item">
-                            <input type="checkbox" id="status-arquivado" value="Arquivado">
-                            <label for="status-arquivado">Arquivado</label>
-                        </div>
-                        <div class="filter-checkbox-item">
-                            <input type="checkbox" id="status-ativo" value="Ativo">
-                            <label for="status-ativo">Ativo</label>
-                        </div>
-                        <div class="filter-checkbox-item">
-                            <input type="checkbox" id="status-suspenso" value="Suspenso">
-                            <label for="status-suspenso">Suspenso</label>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Fase</label>
+                        <div class="filter-checkbox-item"><input type="checkbox" id="status-arquivado" value="Arquivado"><label for="status-arquivado">Arquivado</label></div>
+                        <div class="filter-checkbox-item"><input type="checkbox" id="status-ativo" value="Ativo"><label for="status-ativo">Ativo</label></div>
+                        <div class="filter-checkbox-item"><input type="checkbox" id="status-suspenso" value="Suspenso"><label for="status-suspenso">Suspenso</label></div>
+                    </div></div>
+                <div class="filter-group"><label class="filter-label">Fase</label>
                     <div class="filter-checkbox-group">
-                        <div class="filter-checkbox-item">
-                            <input type="checkbox" id="fase-conhecimento" value="Conhecimento">
-                            <label for="fase-conhecimento">Conhecimento</label>
-                        </div>
-                        <div class="filter-checkbox-item">
-                            <input type="checkbox" id="fase-liquidacao" value="Liquidação">
-                            <label for="fase-liquidacao">Liquidação</label>
-                        </div>
-                        <div class="filter-checkbox-item">
-                            <input type="checkbox" id="fase-execucao" value="Execução">
-                            <label for="fase-execucao">Execução</label>
-                        </div>
-                    </div>
-                </div>
+                        <div class="filter-checkbox-item"><input type="checkbox" id="fase-conhecimento" value="Conhecimento"><label for="fase-conhecimento">Conhecimento</label></div>
+                        <div class="filter-checkbox-item"><input type="checkbox" id="fase-liquidacao" value="Liquidação"><label for="fase-liquidacao">Liquidação</label></div>
+                        <div class="filter-checkbox-item"><input type="checkbox" id="fase-execucao" value="Execução"><label for="fase-execucao">Execução</label></div>
+                    </div></div>
             </div>
-            
-            <!-- Seção: Classificação Processual -->
             <div class="filter-section">
                 <div class="filter-section-title">Classificação Processual</div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Desfecho</label>
-                    <div class="filter-search-list">
-                        <span class="material-icons filter-search-icon">search</span>
+                <div class="filter-group"><label class="filter-label">Desfecho</label>
+                    <div class="filter-search-list"><span class="material-icons-round filter-search-icon">search</span>
                         <input type="text" class="filter-search-input" id="search-desfecho" placeholder="Pesquisar desfecho...">
-                        <div class="filter-list" id="list-desfecho"></div>
-                    </div>
-                </div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Assuntos</label>
-                    <div class="filter-search-list">
-                        <span class="material-icons filter-search-icon">search</span>
+                        <div class="filter-list" id="list-desfecho"></div></div></div>
+                <div class="filter-group"><label class="filter-label">Assuntos</label>
+                    <div class="filter-search-list"><span class="material-icons-round filter-search-icon">search</span>
                         <input type="text" class="filter-search-input" id="search-assuntos" placeholder="Pesquisar assuntos...">
-                        <div class="filter-list" id="list-assuntos"></div>
-                    </div>
-                </div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Classes</label>
-                    <div class="filter-search-list">
-                        <span class="material-icons filter-search-icon">search</span>
+                        <div class="filter-list" id="list-assuntos"></div></div></div>
+                <div class="filter-group"><label class="filter-label">Classes</label>
+                    <div class="filter-search-list"><span class="material-icons-round filter-search-icon">search</span>
                         <input type="text" class="filter-search-input" id="search-classes" placeholder="Pesquisar classes...">
-                        <div class="filter-list" id="list-classes"></div>
-                    </div>
-                </div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Tipos de Recurso</label>
-                    <div class="filter-search-list">
-                        <span class="material-icons filter-search-icon">search</span>
+                        <div class="filter-list" id="list-classes"></div></div></div>
+                <div class="filter-group"><label class="filter-label">Tipos de Recurso</label>
+                    <div class="filter-search-list"><span class="material-icons-round filter-search-icon">search</span>
                         <input type="text" class="filter-search-input" id="search-tipos-recurso" placeholder="Pesquisar...">
-                        <div class="filter-list" id="list-tipos-recurso"></div>
-                    </div>
-                </div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Tipos de Pedido</label>
-                    <div class="filter-search-list">
-                        <span class="material-icons filter-search-icon">search</span>
+                        <div class="filter-list" id="list-tipos-recurso"></div></div></div>
+                <div class="filter-group"><label class="filter-label">Tipos de Pedido</label>
+                    <div class="filter-search-list"><span class="material-icons-round filter-search-icon">search</span>
                         <input type="text" class="filter-search-input" id="search-tipos-pedido" placeholder="Pesquisar...">
-                        <div class="filter-list" id="list-tipos-pedido"></div>
-                    </div>
-                </div>
+                        <div class="filter-list" id="list-tipos-pedido"></div></div></div>
             </div>
-            
-            <!-- Seção: Valores -->
             <div class="filter-section">
                 <div class="filter-section-title">Valores</div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Valor da Causa</label>
+                <div class="filter-group"><label class="filter-label">Valor da Causa</label>
                     <div class="filter-range">
                         <input type="number" class="filter-input" id="filter-valor-causa-min" placeholder="Mínimo">
                         <span>até</span>
-                        <input type="number" class="filter-input" id="filter-valor-causa-max" placeholder="Máximo">
-                    </div>
-                </div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Valor da Condenação</label>
+                        <input type="number" class="filter-input" id="filter-valor-causa-max" placeholder="Máximo"></div></div>
+                <div class="filter-group"><label class="filter-label">Valor da Condenação</label>
                     <div class="filter-range">
                         <input type="number" class="filter-input" id="filter-valor-condenacao-min" placeholder="Mínimo">
                         <span>até</span>
-                        <input type="number" class="filter-input" id="filter-valor-condenacao-max" placeholder="Máximo">
-                    </div>
-                </div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Valor do Acordo</label>
+                        <input type="number" class="filter-input" id="filter-valor-condenacao-max" placeholder="Máximo"></div></div>
+                <div class="filter-group"><label class="filter-label">Valor do Acordo</label>
                     <div class="filter-range">
                         <input type="number" class="filter-input" id="filter-valor-acordo-min" placeholder="Mínimo">
                         <span>até</span>
-                        <input type="number" class="filter-input" id="filter-valor-acordo-max" placeholder="Máximo">
-                    </div>
-                </div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Valor da Liquidação</label>
-                    <div class="filter-range">
-                        <input type="number" class="filter-input" id="filter-valor-liquidacao-min" placeholder="Mínimo">
-                        <span>até</span>
-                        <input type="number" class="filter-input" id="filter-valor-liquidacao-max" placeholder="Máximo">
-                    </div>
-                </div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Valor do Depósito</label>
-                    <div class="filter-range">
-                        <input type="number" class="filter-input" id="filter-valor-deposito-min" placeholder="Mínimo">
-                        <span>até</span>
-                        <input type="number" class="filter-input" id="filter-valor-deposito-max" placeholder="Máximo">
-                    </div>
-                </div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Valor da Apólice</label>
-                    <div class="filter-range">
-                        <input type="number" class="filter-input" id="filter-valor-apolice-min" placeholder="Mínimo">
-                        <span>até</span>
-                        <input type="number" class="filter-input" id="filter-valor-apolice-max" placeholder="Máximo">
-                    </div>
-                </div>
+                        <input type="number" class="filter-input" id="filter-valor-acordo-max" placeholder="Máximo"></div></div>
             </div>
-            
-            <!-- Seção: Características Processuais -->
             <div class="filter-section">
-                <div class="filter-section-title">Características Processuais</div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Trânsito em Julgado</label>
+                <div class="filter-section-title">Características</div>
+                <div class="filter-group"><label class="filter-label">Trânsito em Julgado</label>
                     <div class="filter-checkbox-group">
-                        <div class="filter-checkbox-item">
-                            <input type="radio" name="transito" id="transito-julgado" value="Julgado">
-                            <label for="transito-julgado">Julgado</label>
-                        </div>
-                        <div class="filter-checkbox-item">
-                            <input type="radio" name="transito" id="transito-nao-julgado" value="Não julgado">
-                            <label for="transito-nao-julgado">Não julgado</label>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Acordo</label>
+                        <div class="filter-checkbox-item"><input type="radio" name="transito" id="transito-julgado" value="Julgado"><label for="transito-julgado">Julgado</label></div>
+                        <div class="filter-checkbox-item"><input type="radio" name="transito" id="transito-nao-julgado" value="Não julgado"><label for="transito-nao-julgado">Não julgado</label></div>
+                    </div></div>
+                <div class="filter-group"><label class="filter-label">Bloqueio</label>
                     <div class="filter-checkbox-group">
-                        <div class="filter-checkbox-item">
-                            <input type="radio" name="acordo" id="acordo-homologado" value="Homologado">
-                            <label for="acordo-homologado">Homologado</label>
-                        </div>
-                        <div class="filter-checkbox-item">
-                            <input type="radio" name="acordo" id="acordo-nao-homologado" value="Não Homologado">
-                            <label for="acordo-nao-homologado">Não Homologado</label>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Bloqueio</label>
+                        <div class="filter-checkbox-item"><input type="radio" name="bloqueio" id="bloqueio-com" value="Com Indicativo"><label for="bloqueio-com">Com Indicativo</label></div>
+                        <div class="filter-checkbox-item"><input type="radio" name="bloqueio" id="bloqueio-sem" value="Sem indicativo"><label for="bloqueio-sem">Sem indicativo</label></div>
+                    </div></div>
+                <div class="filter-group"><label class="filter-label">Revelia</label>
                     <div class="filter-checkbox-group">
-                        <div class="filter-checkbox-item">
-                            <input type="radio" name="bloqueio" id="bloqueio-com" value="Com Indicativo">
-                            <label for="bloqueio-com">Com Indicativo</label>
-                        </div>
-                        <div class="filter-checkbox-item">
-                            <input type="radio" name="bloqueio" id="bloqueio-sem" value="Sem indicativo">
-                            <label for="bloqueio-sem">Sem indicativo</label>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Desfecho do Pedido de Substituição</label>
-                    <div class="filter-checkbox-group">
-                        <div class="filter-checkbox-item">
-                            <input type="checkbox" id="desfecho-sub-deferido" value="Deferido">
-                            <label for="desfecho-sub-deferido">Deferido</label>
-                        </div>
-                        <div class="filter-checkbox-item">
-                            <input type="checkbox" id="desfecho-sub-indeferido" value="Indeferido">
-                            <label for="desfecho-sub-indeferido">Indeferido</label>
-                        </div>
-                        <div class="filter-checkbox-item">
-                            <input type="checkbox" id="desfecho-sub-nao-identificado" value="Não Identificado">
-                            <label for="desfecho-sub-nao-identificado">Não Identificado</label>
-                        </div>
-                        <div class="filter-checkbox-item">
-                            <input type="checkbox" id="desfecho-sub-pendente" value="Pendente">
-                            <label for="desfecho-sub-pendente">Pendente</label>
-                        </div>
-                    </div>
-                </div>
+                        <div class="filter-checkbox-item"><input type="radio" name="revelia" id="revelia-com" value="Com Indicativo"><label for="revelia-com">Com Indicativo</label></div>
+                        <div class="filter-checkbox-item"><input type="radio" name="revelia" id="revelia-sem" value="Sem indicativo"><label for="revelia-sem">Sem indicativo</label></div>
+                    </div></div>
             </div>
-            
-            <!-- Seção: Jurisdição -->
             <div class="filter-section">
                 <div class="filter-section-title">Jurisdição</div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Grau de Jurisdição</label>
+                <div class="filter-group"><label class="filter-label">Instância Atual</label>
                     <div class="filter-checkbox-group">
-                        <div class="filter-checkbox-item">
-                            <input type="checkbox" id="jurisdicao-1" value="1ª Instância">
-                            <label for="jurisdicao-1">1ª Instância</label>
-                        </div>
-                        <div class="filter-checkbox-item">
-                            <input type="checkbox" id="jurisdicao-2" value="2ª Instância">
-                            <label for="jurisdicao-2">2ª Instância</label>
-                        </div>
-                        <div class="filter-checkbox-item">
-                            <input type="checkbox" id="jurisdicao-superior" value="Superior">
-                            <label for="jurisdicao-superior">Superior</label>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="filter-group">
-                    <label class="filter-label">Maior Grau de Jurisdição em que Esteve</label>
-                    <div class="filter-checkbox-group">
-                        <div class="filter-checkbox-item">
-                            <input type="checkbox" id="maior-jurisdicao-1" value="1ª Instância">
-                            <label for="maior-jurisdicao-1">1ª Instância</label>
-                        </div>
-                        <div class="filter-checkbox-item">
-                            <input type="checkbox" id="maior-jurisdicao-2" value="2ª Instância">
-                            <label for="maior-jurisdicao-2">2ª Instância</label>
-                        </div>
-                        <div class="filter-checkbox-item">
-                            <input type="checkbox" id="maior-jurisdicao-superior" value="Superior">
-                            <label for="maior-jurisdicao-superior">Superior</label>
-                        </div>
-                    </div>
-                </div>
+                        <div class="filter-checkbox-item"><input type="checkbox" id="jurisdicao-1" value="1"><label for="jurisdicao-1">1ª Instância</label></div>
+                        <div class="filter-checkbox-item"><input type="checkbox" id="jurisdicao-2" value="2"><label for="jurisdicao-2">2ª Instância</label></div>
+                    </div></div>
             </div>
         </div>
-        
-        <!-- Footer -->
         <div class="filter-sidebar-footer">
-            <button class="filter-btn filter-btn-secondary" id="btn-clear-filters">Limpar Filtros</button>
+            <button class="filter-btn filter-btn-secondary" id="btn-clear-filters">Limpar</button>
             <button class="filter-btn filter-btn-primary" id="btn-apply-filters">Aplicar Filtros</button>
         </div>
     </div>
-    
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- Filter Sidebar JS -->
+
+    <script src="{% static 'core/vendor/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'core/js/chart-theme.js' %}"></script>
     <script src="{% static 'core/js/filter-sidebar.js' %}"></script>
-    
-    <!-- Submenu Toggle JS -->
     <script>
-        function toggleSubmenu(event, element) {
-            event.preventDefault();
-            const menuItem = element.closest('.menu-item-with-submenu');
-            menuItem.classList.toggle('open');
-        }
+        // Contador de processos no topbar — reflete o filtro ativo
+        (function(){
+            var elTotal=document.getElementById('topbar-total');
+            function fmt(n){ return (n||0).toLocaleString('pt-BR'); }
+            function atualizarTotal(){
+                fetch('/api/dashboard-data-filtered/', {
+                    method:'POST', headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify(window.globalFilters||{})
+                }).then(r=>r.json()).then(d=>{
+                    if(elTotal && d && d.cards) elTotal.textContent=fmt(d.cards.total_processos);
+                }).catch(function(){});
+            }
+            document.addEventListener('DOMContentLoaded', atualizarTotal);
+            document.addEventListener('filtersApplied', atualizarTotal);
+            document.addEventListener('filtersCleared', atualizarTotal);
+        })();
+
+        // Submenu
+        function toggleSubmenu(event, el){ event.preventDefault(); el.closest('.snav-item').classList.toggle('open'); }
+        // Abrir submenu automaticamente se um filho estiver ativo
+        (function(){ var cmp=document.getElementById('cmp-item'); if(cmp && cmp.querySelector('.snav-link.active')) cmp.classList.add('open'); })();
+
+        // Colapsar sidebar (persistente)
+        (function(){
+            var root=document.documentElement, KEY='nx-sidebar';
+            var saved=localStorage.getItem(KEY);
+            if(saved==='collapsed' && window.innerWidth>900) root.setAttribute('data-sidebar','collapsed');
+            var btn=document.getElementById('btn-collapse');
+            if(btn) btn.addEventListener('click',function(){
+                var c=root.getAttribute('data-sidebar')==='collapsed';
+                root.setAttribute('data-sidebar', c?'expanded':'collapsed');
+                localStorage.setItem(KEY, c?'expanded':'collapsed');
+                window.dispatchEvent(new Event('resize')); // reflow dos gráficos
+            });
+            var m=document.getElementById('btn-mobile');
+            if(m) m.addEventListener('click',function(){
+                root.setAttribute('data-sidebar', root.getAttribute('data-sidebar')==='mobile-open'?'expanded':'mobile-open');
+            });
+        })();
     </script>
-    
     {% block extra_js %}{% endblock %}
 </body>
 </html>

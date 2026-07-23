@@ -1,6 +1,7 @@
 // valores-charts.js - Gráficos do módulo Valores
 
 // Função para carregar gráfico de ranking de valores
+window.__nexoReload = function(){ carregarGraficoRankingValores(); };
 function carregarGraficoRankingValores() {
     // Obter filtros selecionados
     const tipoValor = document.querySelector('#tipo-valor-buttons .filter-btn.active').dataset.tipo;

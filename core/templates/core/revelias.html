@@ -94,10 +94,11 @@
 <script>
     // Carregar dados iniciais
     carregarDadosRevelias({});
+    window.__nexoReload = function(){ carregarDadosRevelias(window.globalFilters||{}); };
     
     // Event listener para filtro global
     document.addEventListener('filterApplied', function(e) {
-        carregarDadosRevelias(e.detail.filtros);
+        carregarDadosRevelias(e.detail || {});
     });
 </script>
 {% endblock %}

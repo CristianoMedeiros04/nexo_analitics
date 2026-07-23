@@ -76,9 +76,8 @@
 <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
 <script src="{% static 'core/js/tipos-acao-charts.js' %}"></script>
 <script>
-    // Inicializar gráficos quando a página carregar
-    document.addEventListener('DOMContentLoaded', function() {
-        // Buscar dados da API
+    // Carrega/recarrega os gráficos (filtros injetados globalmente)
+    function carregarTiposAcao() {
         fetch('/api/tipos-acao-data/', {
             method: 'POST',
             headers: {
@@ -94,7 +93,9 @@
             initVolumePedidosChart(data.volume_por_pedidos);
         })
         .catch(error => console.error('Erro ao carregar dados:', error));
-    });
+    }
+    window.__nexoReload = carregarTiposAcao;
+    document.addEventListener('DOMContentLoaded', carregarTiposAcao);
     
     // Função para pegar o CSRF token
     function getCookie(name) {

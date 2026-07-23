@@ -4,6 +4,7 @@ let resultadoConcessaoSelecionado = 'concedida';
 let agrupamentoSelecionado = 'comarca';
 
 // Carregar dados ao iniciar a página
+window.__nexoReload = function(){ carregarGraficoVolumeDeferimentos(); carregarGraficoProporcaoDeferimentos(); carregarGraficoRankingConcessoes(); };
 document.addEventListener('DOMContentLoaded', function() {
     carregarGraficoVolumeDeferimentos();
     carregarGraficoProporcaoDeferimentos();

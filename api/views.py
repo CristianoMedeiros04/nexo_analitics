@@ -40,6 +40,142 @@ from django.views.decorators.http import require_http_methods
 from django.http import JsonResponse
 
 
+# Campos de data (texto DD/MM/YYYY) filtráveis pelo painel
+_CAMPOS_DATA = {
+    'data_acordo', 'data_arquivamento', 'data_distribuicao', 'data_sentenca',
+    'data_transito_julgado', 'data_primeiro_acordao',
+}
+# Faixas de valor: (campo_no_model, chave_min, chave_max)
+_FAIXAS_VALOR = [
+    ('valor_causa', 'valor_causa_min', 'valor_causa_max'),
+    ('valor_condenacao', 'valor_condenacao_min', 'valor_condenacao_max'),
+    ('valor_acordo', 'valor_acordo_min', 'valor_acordo_max'),
+]
+
+
+def _parse_data(texto):
+    """DD/MM/YYYY ou YYYY-MM-DD -> date, ou None."""
+    if not texto:
+        return None
+    from datetime import datetime
+    s = str(texto)[:10]
+    for fmt in ('%d/%m/%Y', '%Y-%m-%d'):
+        try:
+            return datetime.strptime(s, fmt).date()
+        except ValueError:
+            continue
+    return None
+
+
+def _parse_valor(texto):
+    """'R$ 1.234,56' -> 1234.56, ou None."""
+    if texto in (None, ''):
+        return None
+    try:
+        limpo = str(texto).replace('R$', '').replace(' ', '').replace('.', '').replace(',', '.')
+        return float(limpo)
+    except (ValueError, TypeError):
+        return None
+
+
+def aplicar_filtros(queryset, filters):
+    """
+    Aplica os filtros do painel geral (chaves enviadas pelo frontend) ao
+    queryset de Processo. Fonte única de verdade do filtro para TODOS os
+    módulos. Campos inexistentes são ignorados silenciosamente.
+    Retorna sempre um QuerySet (para permitir .filter()/.values() depois).
+    """
+    if not filters:
+        return queryset
+    f = filters
+
+    # 1) Categóricos diretos (campo do model -> chave do frontend)
+    diretos = {
+        'uf': 'ufs', 'comarca': 'comarcas', 'tribunal': 'tribunais',
+        'fase': 'fase', 'situacao': 'status', 'desfecho': 'desfecho',
+        'classe': 'classes', 'tipo_cargos': 'tipo_cargos',
+    }
+    for campo, chave in diretos.items():
+        vals = f.get(chave)
+        if vals:
+            queryset = queryset.filter(**{f'{campo}__in': vals})
+
+    # 2) Instância (jurisdicao: ['1','2'])
+    if f.get('jurisdicao'):
+        try:
+            queryset = queryset.filter(instancia__in=[int(x) for x in f['jurisdicao']])
+        except (TypeError, ValueError):
+            pass
+
+    # 3) Multi-valor em campos-lista (icontains OR)
+    def _or_icontains(campo, valores):
+        q = Q()
+        for v in valores:
+            q |= Q(**{f'{campo}__icontains': v})
+        return q
+
+    if f.get('assuntos'):
+        queryset = queryset.filter(_or_icontains('assuntos', f['assuntos']))
+    if f.get('tipos_recurso'):
+        queryset = queryset.filter(_or_icontains('tipos_recursos', f['tipos_recurso']))
+    if f.get('magistrados'):
+        queryset = queryset.filter(_or_icontains('juizes', f['magistrados']))
+    if f.get('cnpj'):
+        queryset = queryset.filter(_or_icontains('cnpjs', f['cnpj']))
+    if f.get('advogados'):
+        q = Q()
+        for v in f['advogados']:
+            q |= Q(advogados_polo_ativo__icontains=v) | Q(advogados_polo_passivo__icontains=v)
+        queryset = queryset.filter(q)
+    if f.get('partes'):
+        q = Q()
+        for v in f['partes']:
+            q |= Q(partes_polo_ativo__icontains=v) | Q(partes_polo_passivo__icontains=v)
+        queryset = queryset.filter(q)
+
+    # 4) Tipos de pedido (tabela normalizada)
+    if f.get('tipos_pedido'):
+        queryset = queryset.filter(pedidos_norm__catalogo__nome__in=f['tipos_pedido']).distinct()
+
+    # 5) Indicativos (radio "Com Indicativo"/"Sem indicativo")
+    if f.get('bloqueio'):
+        queryset = queryset.filter(indicativo_bloqueio='Sim' if 'Com' in f['bloqueio'] else 'Não')
+    if f.get('revelia'):
+        queryset = queryset.filter(indicativo_revelia='Sim' if 'Com' in f['revelia'] else 'Não')
+    if f.get('transito'):
+        if f['transito'] == 'Julgado':
+            queryset = queryset.exclude(data_transito_julgado__isnull=True).exclude(data_transito_julgado='')
+        else:
+            queryset = queryset.filter(Q(data_transito_julgado__isnull=True) | Q(data_transito_julgado=''))
+
+    # 6) Período por tipo de data (datas em texto → filtra por PKs, mantém queryset)
+    tipo_data, di, df = f.get('tipo_data'), f.get('data_inicio'), f.get('data_fim')
+    if tipo_data in _CAMPOS_DATA and (di or df):
+        d0, d1 = _parse_data(di), _parse_data(df)
+        pks = []
+        for pk, val in queryset.values_list('numero_processo', tipo_data):
+            dv = _parse_data(val)
+            if not dv or (d0 and dv < d0) or (d1 and dv > d1):
+                continue
+            pks.append(pk)
+        queryset = queryset.filter(numero_processo__in=pks)
+
+    # 7) Faixas de valor (texto monetário → filtra por PKs)
+    for campo, kmin, kmax in _FAIXAS_VALOR:
+        vmin, vmax = f.get(kmin), f.get(kmax)
+        if vmin is None and vmax is None:
+            continue
+        pks = []
+        for pk, val in queryset.values_list('numero_processo', campo):
+            v = _parse_valor(val)
+            if v is None or (vmin is not None and v < vmin) or (vmax is not None and v > vmax):
+                continue
+            pks.append(pk)
+        queryset = queryset.filter(numero_processo__in=pks)
+
+    return queryset
+
+
 @api_view(['GET'])
 def filter_options(request):
     """
@@ -185,30 +321,8 @@ def dashboard_data_filtered(request):
     Retorna dados do dashboard aplicando filtros.
     """
     filters = request.data
-    
-    # Construir queryset com filtros
-    queryset = Processo.objects.all()
-    
-    # Aplicar filtros de UF
-    if filters.get('ufs'):
-        queryset = queryset.filter(uf__in=filters['ufs'])
-    
-    # Aplicar filtros de Comarca
-    if filters.get('comarcas'):
-        queryset = queryset.filter(comarca__in=filters['comarcas'])
-    
-    # Aplicar filtros de Status
-    if filters.get('status'):
-        queryset = queryset.filter(situacao__in=filters['status'])
-    
-    # Aplicar filtros de Fase
-    if filters.get('fase'):
-        queryset = queryset.filter(fase__in=filters['fase'])
-    
-    # Nota: Filtros de data e valores numéricos foram temporariamente desabilitados
-    # pois os campos no banco são CharField (texto), não DateField/DecimalField
-    # Para habilitar, seria necessário converter os campos ou fazer cast nas queries
-    
+    queryset = aplicar_filtros(Processo.objects.all(), filters)
+
     # Calcular estatísticas com queryset filtrado
     from django.db.models import Count, Sum, Avg
     from datetime import datetime, timedelta
@@ -335,30 +449,9 @@ def acordos_data(request):
     from collections import defaultdict
     import re
     
-    # Obter filtros se for POST
-    filters = {}
-    if request.method == 'POST':
-        filters = request.data
-    
-    # Aplicar filtros
-    queryset = Processo.objects.all()
-    
-    # Filtro por UF
-    if filters.get('ufs'):
-        queryset = queryset.filter(uf__in=filters['ufs'])
-    
-    # Filtro por Comarca
-    if filters.get('comarcas'):
-        queryset = queryset.filter(comarca__in=filters['comarcas'])
-    
-    # Filtro por Fase
-    if filters.get('fase'):
-        queryset = queryset.filter(fase__in=filters['fase'])
-    
-    # Filtro por Status
-    if filters.get('status'):
-        queryset = queryset.filter(situacao__in=filters['status'])
-    
+    filters = request.data if request.method == 'POST' else {}
+    queryset = aplicar_filtros(Processo.objects.all(), filters)
+
     # Processos com acordo (data_acordo não vazia)
     processos_com_acordo = queryset.exclude(data_acordo__isnull=True).exclude(data_acordo='')
     
@@ -571,12 +664,8 @@ def desfechos_data(request):
     Retorna dados para os gráficos do módulo Desfechos.
     Suporta filtros via POST.
     """
-    # Obter queryset base
-    if request.method == 'POST':
-        filters = request.data
-        queryset = aplicar_filtros(Processo.objects.all(), filters)
-    else:
-        queryset = Processo.objects.all()
+    filters = request.data if request.method == 'POST' else {}
+    queryset = aplicar_filtros(Processo.objects.all(), filters)
     
     # 1. VOLUME DE PROCESSOS POR TIPO DE DESFECHO
     volume_desfechos = calcular_volume_desfechos(queryset)
@@ -718,30 +807,9 @@ def distribuicao_data(request):
     from collections import defaultdict
     import re
     
-    # Obter filtros se for POST
-    filters = {}
-    if request.method == 'POST':
-        filters = request.data
-    
-    # Aplicar filtros
-    queryset = Processo.objects.all()
-    
-    # Filtro por UF
-    if filters.get('ufs'):
-        queryset = queryset.filter(uf__in=filters['ufs'])
-    
-    # Filtro por Comarca
-    if filters.get('comarcas'):
-        queryset = queryset.filter(comarca__in=filters['comarcas'])
-    
-    # Filtro por Fase
-    if filters.get('fase'):
-        queryset = queryset.filter(fase__in=filters['fase'])
-    
-    # Filtro por Status
-    if filters.get('status'):
-        queryset = queryset.filter(situacao__in=filters['status'])
-    
+    filters = request.data if request.method == 'POST' else {}
+    queryset = aplicar_filtros(Processo.objects.all(), filters)
+
     # 1. VOLUME DE PROCESSOS DISTRIBUÍDOS POR ANO
     volume_distribuicao = calcular_volume_distribuicao(queryset)
     
@@ -836,30 +904,9 @@ def duracao_data(request):
     from datetime import datetime
     from collections import defaultdict
     
-    # Obter filtros se for POST
-    filters = {}
-    if request.method == 'POST':
-        filters = request.data
-    
-    # Aplicar filtros
-    queryset = Processo.objects.all()
-    
-    # Filtro por UF
-    if filters.get('ufs'):
-        queryset = queryset.filter(uf__in=filters['ufs'])
-    
-    # Filtro por Comarca
-    if filters.get('comarcas'):
-        queryset = queryset.filter(comarca__in=filters['comarcas'])
-    
-    # Filtro por Fase
-    if filters.get('fase'):
-        queryset = queryset.filter(fase__in=filters['fase'])
-    
-    # Filtro por Status
-    if filters.get('status'):
-        queryset = queryset.filter(situacao__in=filters['status'])
-    
+    filters = request.data if request.method == 'POST' else {}
+    queryset = aplicar_filtros(Processo.objects.all(), filters)
+
     # 1. DURAÇÃO DE PROCESSOS POR FASE
     duracao_por_fase = calcular_duracao_por_fase(queryset)
     
@@ -1153,20 +1200,8 @@ def revelias_data(request):
     from datetime import datetime
     from collections import defaultdict, Counter
     
-    # Aplicar filtros
-    queryset = Processo.objects.all()
-    
-    if request.method == 'POST':
-        filtros = request.data
-        
-        # Aplicar filtros conforme necessário
-        if filtros.get('uf'):
-            queryset = queryset.filter(uf__in=filtros['uf'])
-        if filtros.get('comarca'):
-            queryset = queryset.filter(comarca__in=filtros['comarca'])
-        if filtros.get('tribunal'):
-            queryset = queryset.filter(tribunal__in=filtros['tribunal'])
-        # ... outros filtros conforme necessário
+    filters = request.data if request.method == 'POST' else {}
+    queryset = aplicar_filtros(Processo.objects.all(), filters)
     
     # Calcular dados dos gráficos
     volume_por_ano = calcular_volume_revelias_por_ano(queryset)
@@ -1328,17 +1363,7 @@ def tipos_acao_data(request):
     """
     from core.models import Processo
     
-    # Aplicar filtros
-    queryset = Processo.objects.all()
-    filtros = request.data
-    
-    # Aplicar filtros (mesmo código dos outros endpoints)
-    if filtros.get('ufs'):
-        queryset = queryset.filter(uf__in=filtros['ufs'])
-    if filtros.get('comarcas'):
-        queryset = queryset.filter(comarca__in=filtros['comarcas'])
-    if filtros.get('tribunais'):
-        queryset = queryset.filter(tribunal__in=filtros['tribunais'])
+    queryset = aplicar_filtros(Processo.objects.all(), request.data)
     
     # Calcular dados dos gráficos
     volume_por_classe = calcular_volume_por_classe(queryset)
@@ -1427,17 +1452,8 @@ def recursos_data(request):
     from datetime import datetime
     from collections import defaultdict, Counter
     
-    # Aplicar filtros
-    queryset = Processo.objects.all()
+    queryset = aplicar_filtros(Processo.objects.all(), request.data)
     filtros = request.data
-    
-    # Aplicar filtros
-    if filtros.get('ufs'):
-        queryset = queryset.filter(uf__in=filtros['ufs'])
-    if filtros.get('comarcas'):
-        queryset = queryset.filter(comarca__in=filtros['comarcas'])
-    if filtros.get('tribunais'):
-        queryset = queryset.filter(tribunal__in=filtros['tribunais'])
     
     # Obter parâmetros específicos
     chart_type = filtros.get('chart_type', 'reversoes_polo')
@@ -1799,23 +1815,7 @@ def pedidos_data(request):
     """
     from core.models import Processo
     
-    # Aplicar filtros globais
-    queryset = Processo.objects.all()
-    filtros = request.data.get('filtros', {})
-    
-    # Aplicar filtros (mesma lógica dos outros módulos)
-    if filtros.get('comarca'):
-        queryset = queryset.filter(comarca__icontains=filtros['comarca'])
-    if filtros.get('uf'):
-        queryset = queryset.filter(uf__icontains=filtros['uf'])
-    if filtros.get('classe'):
-        queryset = queryset.filter(classe__icontains=filtros['classe'])
-    if filtros.get('assunto'):
-        queryset = queryset.filter(assuntos__icontains=filtros['assunto'])
-    if filtros.get('data_distribuicao_inicio'):
-        queryset = queryset.filter(data_distribuicao__gte=filtros['data_distribuicao_inicio'])
-    if filtros.get('data_distribuicao_fim'):
-        queryset = queryset.filter(data_distribuicao__lte=filtros['data_distribuicao_fim'])
+    queryset = aplicar_filtros(Processo.objects.all(), request.data)
     
     # Obter tipo de gráfico solicitado
     tipo_grafico = request.data.get('tipo', 'volume')
@@ -1993,40 +1993,7 @@ def valores_data(request):
     from django.db.models import Q
     import json
     
-    # Obter filtros do request
-    filtros_json = request.data.get('filtros', '{}')
-    if isinstance(filtros_json, str):
-        filtros = json.loads(filtros_json) if filtros_json else {}
-    else:
-        filtros = filtros_json
-    
-    # Aplicar filtros
-    queryset = Processo.objects.all()
-    
-    if filtros:
-        q_objects = Q()
-        
-        # Filtros gerais
-        if filtros.get('uf'):
-            q_objects &= Q(uf__icontains=filtros['uf'])
-        if filtros.get('comarca'):
-            q_objects &= Q(comarca__icontains=filtros['comarca'])
-        if filtros.get('tribunal'):
-            q_objects &= Q(tribunal__icontains=filtros['tribunal'])
-        if filtros.get('classe'):
-            q_objects &= Q(classe__icontains=filtros['classe'])
-        if filtros.get('assunto'):
-            q_objects &= Q(assunto__icontains=filtros['assunto'])
-        if filtros.get('magistrado'):
-            q_objects &= Q(magistrado__icontains=filtros['magistrado'])
-        if filtros.get('advogado_polo_ativo'):
-            q_objects &= Q(advogado_polo_ativo__icontains=filtros['advogado_polo_ativo'])
-        if filtros.get('cargo'):
-            q_objects &= Q(cargo__icontains=filtros['cargo'])
-        if filtros.get('origem'):
-            q_objects &= Q(origem__icontains=filtros['origem'])
-        
-        queryset = queryset.filter(q_objects)
+    queryset = aplicar_filtros(Processo.objects.all(), request.data)
     
     # Calcular ranking de valores
     tipo_valor = request.data.get('tipo_valor', 'causa')

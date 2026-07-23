@@ -19,6 +19,7 @@ let agrupamentoRankingVariacao = 'comarca';
 /**
  * Carrega dados da API de recursos
  */
+window.__nexoReload = function(){ carregarDadosRecursos(window.globalFilters||{}); };
 function carregarDadosRecursos(filtros = {}) {
     filtrosGlobais = filtros;
     

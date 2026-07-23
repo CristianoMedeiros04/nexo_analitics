@@ -102,17 +102,24 @@ class ControlJusClient:
 
     def _chamar(self, method, path, body=None):
         token = self._garantir_token()
-        try:
-            return self._http(method, path, body, token=token)
-        except urllib.error.HTTPError as e:
-            if e.code == 401:
-                # token expirado — refaz login uma vez
-                self._token = None
-                token = self._garantir_token()
+        tentativas_5xx = 0
+        while True:
+            try:
                 return self._http(method, path, body, token=token)
-            if e.code == 404:
-                return None
-            raise
+            except urllib.error.HTTPError as e:
+                if e.code == 401:
+                    # token expirado — refaz login uma vez
+                    self._token = None
+                    token = self._garantir_token()
+                    return self._http(method, path, body, token=token)
+                if e.code == 404:
+                    return None
+                if e.code >= 500 and tentativas_5xx < 3:
+                    # instabilidade transitória da API — backoff exponencial
+                    tentativas_5xx += 1
+                    time.sleep(2 ** tentativas_5xx)
+                    continue
+                raise
 
     # ------------------------------------------------------------- endpoints
     def listar_todos_processos(self, quantidade=50, max_paginas=None):

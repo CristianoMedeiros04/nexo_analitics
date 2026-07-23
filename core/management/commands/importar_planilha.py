@@ -78,6 +78,18 @@ DESFECHOS_PEDIDO_VALIDOS = {
     "PLEITEADO", "DEFERIMENTO", "INDEFERIMENTO", "DEFERIMENTO PARCIAL", "INDETERMINADO",
 }
 
+# Nome do estado -> sigla (padroniza a coluna UF; o ControlJus já entrega sigla)
+UF_SIGLAS = {
+    "Acre": "AC", "Alagoas": "AL", "Amapá": "AP", "Amazonas": "AM", "Bahia": "BA",
+    "Ceará": "CE", "Distrito Federal": "DF", "Espírito Santo": "ES", "Goiás": "GO",
+    "Maranhão": "MA", "Mato Grosso": "MT", "Mato Grosso do Sul": "MS",
+    "Minas Gerais": "MG", "Pará": "PA", "Paraíba": "PB", "Paraná": "PR",
+    "Pernambuco": "PE", "Piauí": "PI", "Rio de Janeiro": "RJ",
+    "Rio Grande do Norte": "RN", "Rio Grande do Sul": "RS", "Rondônia": "RO",
+    "Roraima": "RR", "Santa Catarina": "SC", "São Paulo": "SP", "Sergipe": "SE",
+    "Tocantins": "TO",
+}
+
 
 def _decimal_br(valor_str):
     try:
@@ -147,6 +159,8 @@ class Command(BaseCommand):
                 continue
             dados = {campo: reg.get(col) for col, campo in MAPA.items() if campo != "numero_processo"}
             # tipos especiais
+            if dados.get("uf"):
+                dados["uf"] = UF_SIGLAS.get(dados["uf"], dados["uf"])
             if dados.get("instancia") is not None:
                 try:
                     dados["instancia"] = int(float(dados["instancia"]))
@@ -187,6 +201,13 @@ class Command(BaseCommand):
                 if alterados:
                     proc.save(update_fields=alterados)
                     atualizados += 1
+
+        # ---- Normalização de UF nos registros existentes (nome -> sigla)
+        normalizados_uf = 0
+        for nome_uf, sigla in UF_SIGLAS.items():
+            normalizados_uf += Processo.objects.filter(uf=nome_uf).update(uf=sigla)
+        if normalizados_uf:
+            self.stdout.write(f"UF normalizada em {normalizados_uf} registros (nome -> sigla).")
 
         # ---- Limpeza de sobras do seed de testes (SQLite antigo):
         # registros que não estão na planilha E nunca foram vistos no

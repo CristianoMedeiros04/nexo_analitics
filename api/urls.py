@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework import routers
-from .views import ProcessoViewSet, filter_options, dashboard_data_filtered, acordos_data, desfechos_data, distribuicao_data, duracao_data, revelias_data, tipos_acao_data, recursos_data, pedidos_data, pedidos_ia_data, valores_data, advogados_lista, advogados_desfechos, advogados_duracao, advogados_deferimento, advogados_valores_medios, advogados_valores_totais, advogados_proporcao_ativos, magistrados_lista, magistrados_desfechos, magistrados_decisoes, magistrados_duracao, magistrados_deferimento, magistrados_valores_medios, magistrados_valores_totais, magistrados_proporcao_ativos
+from .views import ProcessoViewSet, filter_options, dashboard_data_filtered, acordos_data, desfechos_data, distribuicao_data, duracao_data, revelias_data, tipos_acao_data, recursos_data, pedidos_data, pedidos_ia_data, ranking_exito, valores_data, advogados_lista, advogados_desfechos, advogados_duracao, advogados_deferimento, advogados_valores_medios, advogados_valores_totais, advogados_proporcao_ativos, magistrados_lista, magistrados_desfechos, magistrados_decisoes, magistrados_duracao, magistrados_deferimento, magistrados_valores_medios, magistrados_valores_totais, magistrados_proporcao_ativos
 
 router = routers.DefaultRouter()
 router.register(r'processos', ProcessoViewSet, basename='processos')
@@ -20,6 +20,7 @@ urlpatterns = [
     path('recursos-data/', recursos_data, name='recursos-data'),
     path('pedidos-data/', pedidos_data, name='pedidos-data'),
     path('pedidos-ia-data/', pedidos_ia_data, name='pedidos-ia-data'),
+    path('ranking-exito/', ranking_exito, name='ranking-exito'),
     path('valores-data/', valores_data, name='valores-data'),
     path('advogados/lista/', advogados_lista, name='advogados-lista'),
     path('advogados/desfechos/', advogados_desfechos, name='advogados-desfechos'),

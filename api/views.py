@@ -3031,3 +3031,63 @@ def pedidos_ia_data(request):
         'total_pedidos': sum(l['total'] for l in linhas),
         'tipos_distintos': len(linhas),
     })
+
+
+@api_view(['GET', 'POST'])
+def ranking_exito(request):
+    """
+    Ranking de taxa de êxito por advogado (polo ativo) ou magistrado,
+    calculado a partir dos resultados de pedidos analisados pela IA
+    (PedidoProcesso). Taxa = (deferido + 0.5*parcial) / julgados.
+    Respeita o filtro geral. Corpo: {"tipo": "advogados"|"magistrados"}.
+    """
+    from collections import defaultdict
+    from core.models import PedidoProcesso
+
+    body = request.data if request.method == 'POST' else {}
+    tipo = body.get('tipo', 'advogados')
+    campo = 'advogados_polo_ativo' if tipo == 'advogados' else 'juizes'
+
+    processos = aplicar_filtros(Processo.objects.all(), body)
+
+    # tallies de pedidos por processo
+    por_proc = defaultdict(lambda: {'def': 0, 'parc': 0, 'indef': 0})
+    for pid, resultado in PedidoProcesso.objects.filter(
+        processo__in=processos
+    ).values_list('processo_id', 'resultado'):
+        t = por_proc[pid]
+        if resultado == 'DEFERIMENTO':
+            t['def'] += 1
+        elif resultado == 'DEFERIMENTO PARCIAL':
+            t['parc'] += 1
+        elif resultado == 'INDEFERIMENTO':
+            t['indef'] += 1
+
+    # agrega por nome (advogado/magistrado)
+    agg = defaultdict(lambda: {'processos': 0, 'def': 0, 'parc': 0, 'indef': 0})
+    for pid, texto in processos.values_list('numero_processo', campo):
+        if not texto:
+            continue
+        nomes = {n.strip() for n in str(texto).replace(';', ',').split(',') if len(n.strip()) > 2}
+        t = por_proc.get(pid)
+        for nome in nomes:
+            a = agg[nome]
+            a['processos'] += 1
+            if t:
+                a['def'] += t['def']; a['parc'] += t['parc']; a['indef'] += t['indef']
+
+    linhas = []
+    for nome, a in agg.items():
+        julgados = a['def'] + a['parc'] + a['indef']
+        taxa = round(100 * (a['def'] + 0.5 * a['parc']) / julgados, 1) if julgados else None
+        linhas.append({
+            'nome': nome, 'processos': a['processos'], 'julgados': julgados,
+            'taxa_exito': taxa,
+        })
+
+    # relevância: pelo menos 10 pedidos julgados
+    com_taxa = [l for l in linhas if l['julgados'] >= 10]
+    top_taxa = sorted(com_taxa, key=lambda x: (-(x['taxa_exito'] or 0), -x['julgados']))[:15]
+    top_volume = sorted(linhas, key=lambda x: -x['processos'])[:15]
+
+    return Response({'top_taxa': top_taxa, 'top_volume': top_volume, 'tipo': tipo})

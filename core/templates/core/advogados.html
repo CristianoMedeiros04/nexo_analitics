@@ -324,7 +324,16 @@
 
 {% block content %}
 <div class="advogados-container">
-    <h1 class="page-title">Advogados - Comparar</h1>
+    <div class="page-head"><h1>Advogados</h1><p>Comparação de desempenho entre advogados.</p></div>
+
+    <!-- Ranking de taxa de êxito (IA) -->
+    <div class="chart-card">
+        <div class="chart-card-header">
+            <h3 class="chart-card-title">Ranking de taxa de êxito · advogados do polo ativo</h3>
+            <span class="chart-card-badge">IA · ≥ 10 julgados</span>
+        </div>
+        <div id="exito-ranking" style="height:460px;"></div>
+    </div>
 
     <!-- Filtros Preliminares -->
     <div class="filtros-preliminares">
@@ -485,6 +494,9 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>window.EXITO_TIPO="advogados";</script>
+<script src="{% static 'core/js/exito-ranking.js' %}"></script>
+
 <script src="{% static 'core/js/advogados-charts.js' %}"></script>
 <script>
     // Variáveis globais

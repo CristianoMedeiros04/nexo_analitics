@@ -169,6 +169,13 @@ def executar_consulta(spec):
     limite = min(int(spec.get("limite", 15) or 15), 50)
     campo_valor = spec.get("campo_valor", "valor_causa")
 
+    # roteamento: taxa de deferimento por dimensão de PROCESSO (tribunal, uf,
+    # comarca, magistrado, advogado...) é sempre calculada na fonte processos,
+    # que pondera os pedidos dos processos de cada grupo. Só "pedido" fica na
+    # fonte pedidos. Assim a IA obtém o ranking direto, sem recalcular à mão.
+    if metrica == "taxa_deferimento" and (dim in _DIM_DIRETA or dim in _DIM_MULTI):
+        fonte = "processos"
+
     qs = _base_qs(filtros)
 
     # ---------- fonte pedidos ----------

@@ -23,7 +23,9 @@ class Command(BaseCommand):
     help = "Atualização semanal: sincroniza ControlJus e roda análise IA."
 
     def add_arguments(self, parser):
-        parser.add_argument("--limite-ia", type=int, default=200,
+        import os
+        parser.add_argument("--limite-ia", type=int,
+                            default=int(os.environ.get("IA_LIMITE", "200")),
                             help="Máximo de decisões analisadas por IA nesta execução.")
 
     def handle(self, *args, **options):

@@ -15,7 +15,7 @@ function criarGraficoVolumeDesfechos(data) {
         type: 'bar',
         orientation: 'h',
         marker: {
-            color: '#2b538f',
+            color: '#6366f1',
             cornerradius: 5
         },
         text: data.values,
@@ -114,7 +114,7 @@ function atualizarRankingDesfechos() {
         type: 'bar',
         orientation: 'h',
         marker: {
-            color: '#2b538f',
+            color: '#6366f1',
             cornerradius: 5
         },
         text: values,
@@ -164,8 +164,8 @@ function criarGraficoDecisoesInstancias(data) {
     
     // Cores para diferentes instâncias
     const cores = {
-        'primeira_instancia': '#2b538f',
-        'segunda_instancia': '#4a90e2',
+        'primeira_instancia': '#6366f1',
+        'segunda_instancia': '#6366f1',
         'instancia_superior': '#7cb5ec'
     };
     

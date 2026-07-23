@@ -2973,3 +2973,61 @@ def magistrados_proporcao_ativos(request):
     
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+@api_view(['GET', 'POST'])
+def pedidos_ia_data(request):
+    """
+    Análise de pedidos a partir da tabela normalizada (PedidoProcesso),
+    populada pela IA e pela planilha-base. Para cada tipo de pedido:
+    volume e desmembramento por resultado (deferido / parcial / indeferido /
+    pleiteado), além da taxa de deferimento. Respeita o filtro geral.
+    """
+    from collections import defaultdict
+    from core.models import PedidoProcesso
+
+    filters = request.data if request.method == 'POST' else {}
+    processos = aplicar_filtros(Processo.objects.all(), filters)
+
+    qs = PedidoProcesso.objects.filter(processo__in=processos).values_list(
+        'catalogo__nome', 'resultado'
+    )
+
+    agg = defaultdict(lambda: {'DEFERIMENTO': 0, 'DEFERIMENTO PARCIAL': 0,
+                               'INDEFERIMENTO': 0, 'PLEITEADO': 0, 'INDETERMINADO': 0})
+    for nome, resultado in qs:
+        if not nome:
+            continue
+        agg[nome][resultado if resultado in agg[nome] else 'INDETERMINADO'] += 1
+
+    linhas = []
+    for nome, r in agg.items():
+        total = sum(r.values())
+        julgados = r['DEFERIMENTO'] + r['DEFERIMENTO PARCIAL'] + r['INDEFERIMENTO']
+        favoraveis = r['DEFERIMENTO'] + 0.5 * r['DEFERIMENTO PARCIAL']
+        taxa = round(100 * favoraveis / julgados, 1) if julgados else None
+        linhas.append({
+            'pedido': nome, 'total': total, 'julgados': julgados,
+            'deferido': r['DEFERIMENTO'], 'parcial': r['DEFERIMENTO PARCIAL'],
+            'indeferido': r['INDEFERIMENTO'], 'pleiteado': r['PLEITEADO'],
+            'taxa_deferimento': taxa,
+        })
+
+    top_volume = sorted(linhas, key=lambda x: -x['total'])[:15]
+    # taxa: só pedidos com massa julgada relevante (>=5 julgamentos)
+    com_taxa = [l for l in linhas if l['julgados'] >= 5]
+    top_taxa = sorted(com_taxa, key=lambda x: (-(x['taxa_deferimento'] or 0), -x['julgados']))[:15]
+
+    # resumo global de resultados
+    resumo = {'DEFERIMENTO': 0, 'DEFERIMENTO PARCIAL': 0, 'INDEFERIMENTO': 0, 'PLEITEADO': 0}
+    for r in agg.values():
+        for k in resumo:
+            resumo[k] += r[k]
+
+    return Response({
+        'top_volume': top_volume,
+        'top_taxa': top_taxa,
+        'resumo_resultados': resumo,
+        'total_pedidos': sum(l['total'] for l in linhas),
+        'tipos_distintos': len(linhas),
+    })

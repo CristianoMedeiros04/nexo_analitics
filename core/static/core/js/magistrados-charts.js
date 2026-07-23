@@ -84,7 +84,7 @@ function renderizarGraficoDesfechos(data) {
         'Arquivado': '#26A69A',                    // Teal
         'Indeferimento da Petição Inicial': '#F44336',           // Vermelho
         'Arquivamento Ausência do Reclamante': '#E91E63',        // Rosa
-        'Extinção sem Resolução de Mérito': '#5C6BC0',           // Índigo
+        'Extinção sem Resolução de Mérito': '#6366f1',           // Índigo
         'Extinção': '#AB47BC',                     // Roxo claro
         'Homologação de Acordo': '#29B6F6',        // Azul claro
         'Não informado': '#BDBDBD'                // Cinza
@@ -194,7 +194,7 @@ function renderizarGraficoDecisoes(data) {
         'Provido': '#26A69A',                      // Teal
         'Não Provido': '#EF5350',                  // Vermelho
         'Parcialmente Provido': '#FFA726',         // Laranja claro
-        'Conhecido': '#5C6BC0',                    // Índigo
+        'Conhecido': '#6366f1',                    // Índigo
         'Não Conhecido': '#EC407A',                // Rosa
         'Desprovido': '#8D6E63',                   // Marrom
         'Não-Acolhimento de Embargos de Declaração': '#78909C',  // Cinza azulado
@@ -299,7 +299,7 @@ function renderizarGraficoDuracao(data) {
     const faixas = Array.from(faixasSet);
     
     // Cores para cada magistrado
-    const coresMagistrados = ['#2196F3', '#4CAF50', '#FF9800', '#9E9E9E'];
+    const coresMagistrados = ['#0ea5e9', '#4CAF50', '#FF9800', '#9E9E9E'];
     
     // Criar traces (uma para cada magistrado)
     const traces = magistrados.map((adv, index) => {
@@ -390,7 +390,7 @@ function renderizarGraficoDeferimento(data) {
     const tiposPedidos = Array.from(tiposSet);
     
     // Cores para cada magistrado
-    const coresMagistrados = ['#2196F3', '#9E9E9E', '#4CAF50', '#FF9800'];
+    const coresMagistrados = ['#0ea5e9', '#9E9E9E', '#4CAF50', '#FF9800'];
     
     // Criar traces (uma para cada magistrado)
     const traces = magistrados.map((adv, index) => {
@@ -482,7 +482,7 @@ function renderizarGraficoValoresMedios(data) {
     
     // Cores para cada tipo de valor
     const coresValores = {
-        'Acordo': '#2196F3',
+        'Acordo': '#0ea5e9',
         'Causa': '#607D8B',
         'Condenação': '#4CAF50',
         'Liquidação': '#FFC107'
@@ -578,7 +578,7 @@ function renderizarGraficoValoresTotais(data) {
     
     // Cores para cada tipo de valor
     const coresValores = {
-        'Acordo': '#2196F3',
+        'Acordo': '#0ea5e9',
         'Causa': '#607D8B',
         'Condenação': '#4CAF50',
         'Liquidação': '#FFC107'
@@ -672,7 +672,7 @@ function renderizarGraficoProporcaoAtivos(data) {
         x: magistrados.map(adv => data[adv].total),
         y: magistrados.map(mag => mag + '    '),
         marker: {
-            color: '#90CAF9',
+            color: '#bae6fd',
             cornerradius: 5
         },
         text: magistrados.map(adv => data[adv].total),

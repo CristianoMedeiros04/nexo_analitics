@@ -83,7 +83,7 @@ function renderizarGraficoDesfechos(data) {
         'Indeferimento da Petição Inicial': '#F44336',
         'Arquivamento Ausência do Reclamante': '#E91E63',
         'Extinção sem Resolução de Mérito': '#607D8B',
-        'Arquivado': '#2196F3',
+        'Arquivado': '#0ea5e9',
         'Não informado': '#9E9E9E'
     };
     
@@ -173,7 +173,7 @@ function renderizarGraficoDuracao(data) {
     const faixas = data.faixas;
     
     // Cores para cada advogado
-    const coresAdvogados = ['#2196F3', '#4CAF50', '#FF9800', '#9E9E9E'];
+    const coresAdvogados = ['#0ea5e9', '#4CAF50', '#FF9800', '#9E9E9E'];
     
     // Criar traces (uma para cada advogado)
     const traces = advogados.map((adv, index) => {
@@ -256,7 +256,7 @@ function renderizarGraficoDeferimento(data) {
     const tiposPedidos = data.tipos_pedidos;
     
     // Cores para cada advogado
-    const coresAdvogados = ['#2196F3', '#9E9E9E', '#4CAF50', '#FF9800'];
+    const coresAdvogados = ['#0ea5e9', '#9E9E9E', '#4CAF50', '#FF9800'];
     
     // Criar traces (uma para cada advogado)
     const traces = advogados.map((adv, index) => {
@@ -340,7 +340,7 @@ function renderizarGraficoValoresMedios(data) {
     
     // Cores para cada tipo de valor
     const coresValores = {
-        'Acordo': '#2196F3',
+        'Acordo': '#0ea5e9',
         'Causa': '#607D8B',
         'Condenação': '#4CAF50',
         'Liquidação': '#FFC107'
@@ -428,7 +428,7 @@ function renderizarGraficoValoresTotais(data) {
     
     // Cores para cada tipo de valor
     const coresValores = {
-        'Acordo': '#2196F3',
+        'Acordo': '#0ea5e9',
         'Causa': '#607D8B',
         'Condenação': '#4CAF50',
         'Liquidação': '#FFC107'
@@ -522,7 +522,7 @@ function renderizarGraficoProporcaoAtivos(data) {
         x: advogados.map(adv => data.advogados[adv].total),
         y: advogados.map(adv => adv + '    '),
         marker: {
-            color: '#90CAF9',
+            color: '#bae6fd',
             cornerradius: 5
         },
         text: advogados.map(adv => data.advogados[adv].total),

@@ -136,8 +136,41 @@
 
 {% block content %}
 <div class="container-fluid">
-    <h1 class="page-title">Pedidos</h1>
-    
+    <div class="page-head">
+        <h1>Pedidos</h1>
+        <p>Análise de pedidos padronizados e seus resultados, extraídos das decisões pela IA.</p>
+    </div>
+
+    <!-- ===== Análise IA: catálogo de pedidos ===== -->
+    <div class="row g-3 mb-2">
+        <div class="col-lg-4">
+            <div class="chart-card" style="height:100%;">
+                <div class="chart-card-header">
+                    <h3 class="chart-card-title">Resultados dos pedidos</h3>
+                    <span class="chart-card-badge">IA</span>
+                </div>
+                <div id="ia-resumo" style="height:300px;"></div>
+                <div id="ia-kpis" style="display:flex; gap:18px; margin-top:6px; flex-wrap:wrap;"></div>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="chart-card" style="height:100%;">
+                <div class="chart-card-header">
+                    <h3 class="chart-card-title">Pedidos mais frequentes · desmembramento por resultado</h3>
+                    <span class="chart-card-badge">Top 15</span>
+                </div>
+                <div id="ia-volume" style="height:430px;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="chart-card">
+        <div class="chart-card-header">
+            <h3 class="chart-card-title">Taxa de deferimento por pedido</h3>
+            <span class="chart-card-badge">≥ 5 julgados</span>
+        </div>
+        <div id="ia-taxa" style="height:460px;"></div>
+    </div>
+
     <!-- Gráfico 1: Volume de deferimentos de pedidos -->
     <div class="chart-container">
         <div class="chart-title">
@@ -210,6 +243,74 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script src="{% static 'core/js/pedidos-charts.js' %}"></script>
+<script>
+(function(){
+    var C={def:'#10b981', parc:'#f59e0b', indef:'#f43f5e', pleit:'#94a3b8'};
+    var elResumo, elVolume, elTaxa;
+    function ci(id){ var d=document.getElementById(id); return d?echarts.init(d):null; }
+
+    function carregarIA(){
+        fetch('/api/pedidos-ia-data/', {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'})
+        .then(r=>r.json()).then(function(d){
+            // --- Donut de resultados
+            var rr=d.resumo_resultados||{};
+            elResumo = elResumo||ci('ia-resumo');
+            elResumo && elResumo.setOption({
+                tooltip:{trigger:'item', formatter:'{b}: {c} ({d}%)'},
+                legend:{bottom:0, itemGap:14},
+                series:[{type:'pie', radius:['52%','76%'], center:['50%','44%'],
+                    avoidLabelOverlap:true, itemStyle:{borderColor:'#fff', borderWidth:3},
+                    label:{show:false}, data:[
+                        {name:'Deferido', value:rr['DEFERIMENTO']||0, itemStyle:{color:C.def}},
+                        {name:'Parcial', value:rr['DEFERIMENTO PARCIAL']||0, itemStyle:{color:C.parc}},
+                        {name:'Indeferido', value:rr['INDEFERIMENTO']||0, itemStyle:{color:C.indef}},
+                        {name:'Pleiteado', value:rr['PLEITEADO']||0, itemStyle:{color:C.pleit}},
+                    ]}]
+            });
+            var kp=document.getElementById('ia-kpis');
+            if(kp){ kp.innerHTML=
+                '<div><div style="font-size:22px;font-weight:800">'+(d.tipos_distintos||0)+'</div><div style="font-size:11.5px;color:var(--muted)">tipos de pedido</div></div>'+
+                '<div><div style="font-size:22px;font-weight:800">'+((d.total_pedidos||0).toLocaleString('pt-BR'))+'</div><div style="font-size:11.5px;color:var(--muted)">pedidos analisados</div></div>'; }
+
+            // --- Barras empilhadas horizontais: top volume
+            var tv=(d.top_volume||[]).slice().reverse();
+            var nomes=tv.map(x=>x.pedido);
+            elVolume = elVolume||ci('ia-volume');
+            elVolume && elVolume.setOption({
+                tooltip:{trigger:'axis', axisPointer:{type:'shadow'}},
+                legend:{data:['Deferido','Parcial','Indeferido','Pleiteado'], top:0},
+                grid:{left:6,right:24,top:34,bottom:6,containLabel:true},
+                xAxis:{type:'value'},
+                yAxis:{type:'category', data:nomes, axisLabel:{width:150, overflow:'truncate'}},
+                series:[
+                    {name:'Deferido', type:'bar', stack:'t', color:C.def, data:tv.map(x=>x.deferido)},
+                    {name:'Parcial', type:'bar', stack:'t', color:C.parc, data:tv.map(x=>x.parcial)},
+                    {name:'Indeferido', type:'bar', stack:'t', color:C.indef, data:tv.map(x=>x.indeferido)},
+                    {name:'Pleiteado', type:'bar', stack:'t', color:C.pleit, data:tv.map(x=>x.pleiteado)},
+                ]
+            });
+
+            // --- Barras de taxa de deferimento (gradiente por valor)
+            var tt=(d.top_taxa||[]).slice().reverse();
+            elTaxa = elTaxa||ci('ia-taxa');
+            elTaxa && elTaxa.setOption({
+                tooltip:{trigger:'axis', axisPointer:{type:'shadow'},
+                    formatter:function(p){var i=p[0];return i.name+'<br/>Taxa: <b>'+i.value+'%</b>';}},
+                grid:{left:6,right:44,top:12,bottom:6,containLabel:true},
+                xAxis:{type:'value', max:100, axisLabel:{formatter:'{value}%'}},
+                yAxis:{type:'category', data:tt.map(x=>x.pedido), axisLabel:{width:170, overflow:'truncate'}},
+                series:[{type:'bar', data:tt.map(x=>x.taxa_deferimento),
+                    label:{show:true, position:'right', formatter:'{c}%', color:'var(--muted)', fontWeight:600},
+                    itemStyle:{borderRadius:[0,6,6,0], color:new echarts.graphic.LinearGradient(0,0,1,0,[
+                        {offset:0,color:'#a7f3d0'},{offset:1,color:'#10b981'}])}}]
+            });
+        }).catch(function(e){ console.error('IA pedidos:', e); });
+    }
+    document.addEventListener('DOMContentLoaded', carregarIA);
+    document.addEventListener('filtersApplied', carregarIA);
+    document.addEventListener('filtersCleared', carregarIA);
+    window.addEventListener('resize', function(){ [elResumo,elVolume,elTaxa].forEach(c=>c&&c.resize()); });
+})();
+</script>
 {% endblock %}

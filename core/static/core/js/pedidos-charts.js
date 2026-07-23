@@ -108,7 +108,7 @@ function renderizarGraficoVolumeDeferimentos(data) {
                 data.medida_liminar.concedida
             ],
             type: 'bar',
-            marker: { color: '#6ba3d8' },
+            marker: { color: '#818cf8' },
             text: [
                 data.justica_gratuita.concedida,
                 data.antecipacao_tutela.concedida,
@@ -226,7 +226,7 @@ function carregarGraficoProporcaoDeferimentos() {
 function renderizarGraficoProporcaoDeferimentos(data) {
     // Cores conforme a imagem de referência
     const cores = [
-        '#6ba3d8',  // Azul claro (Justiça Gratuita CONCEDIDA - maior fatia)
+        '#818cf8',  // Azul claro (Justiça Gratuita CONCEDIDA - maior fatia)
         '#7a7a7a',  // Cinza (Justiça Gratuita NÃO CONCEDIDA)
         '#4a7ba7',  // Azul escuro (Antecipação de Tutela NÃO CONCEDIDA)
         '#5a8fc4',  // Azul médio (Antecipação de Tutela CONCEDIDA)

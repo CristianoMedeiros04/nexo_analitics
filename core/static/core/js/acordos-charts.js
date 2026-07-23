@@ -8,7 +8,7 @@ function criarGraficoProporcaoAcordos(data) {
         name: 'Total de Processos',
         type: 'bar',
         marker: {
-            color: '#4a90e2'
+            color: '#6366f1'
         }
     };
     
@@ -70,7 +70,7 @@ function criarGraficoAcordosFase(data) {
         y: data.labels.map(label => label + '    '),  // Adiciona espaços para criar distância
         orientation: 'h',
         marker: {
-            color: '#2b538f',
+            color: '#6366f1',
             cornerradius: 5
         },
         text: data.values.map(v => formatNumber(v)),
@@ -115,7 +115,7 @@ function criarGraficoVolumeAcordos(data) {
         y: data.values,
         type: 'bar',
         marker: {
-            color: '#2b538f'
+            color: '#6366f1'
         },
         text: data.values.map(v => formatCurrency(v)),
         textposition: 'outside',
@@ -162,7 +162,7 @@ function criarGraficoCausaAcordo(data) {
         y: data.values,
         type: 'bar',
         marker: {
-            color: ['#4a90e2', '#28a745']
+            color: ['#6366f1', '#28a745']
         },
         text: data.values.map(v => formatCurrency(v)),
         textposition: 'outside',
@@ -208,7 +208,7 @@ function criarGraficoCondenacaoAcordo(data) {
         y: data.values,
         type: 'bar',
         marker: {
-            color: ['#4a90e2', '#28a745']
+            color: ['#6366f1', '#28a745']
         },
         text: data.values.map(v => formatCurrency(v)),
         textposition: 'outside',
